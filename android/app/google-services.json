@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "422889200499",
+    "firebase_url": "https://quran-tracker-25-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "quran-tracker-25",
+    "storage_bucket": "quran-tracker-25.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:422889200499:android:cd61f087d6660851354306",
+        "android_client_info": {
+          "package_name": "com.example.quran_mobile"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBYVZ_iIk8bfn8scEWaFC67xWPHNIsaVEo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
