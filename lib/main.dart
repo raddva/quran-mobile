@@ -1,15 +1,16 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:quran_mobile/auth/signin_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   if (kIsWeb) {
-    Firebase.initializeApp(
+    await Firebase.initializeApp(
         options: FirebaseOptions(
             apiKey: "AIzaSyBZ86BxztncUgPbD2bGoYHmv9x-d39jDI4",
-            authDomain: "quran-tracker-25.firebaseapp.com",
+            authDomain: "alquran-tracker.web.app",
             databaseURL:
                 "https://quran-tracker-25-default-rtdb.asia-southeast1.firebasedatabase.app",
             projectId: "quran-tracker-25",
@@ -35,6 +36,7 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
       ),
       debugShowCheckedModeBanner: false,
+      home: LoginScreen(),
     );
   }
 }
