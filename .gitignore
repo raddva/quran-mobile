@@ -39,11 +39,18 @@ app.*.symbols
 # Obfuscation related
 app.*.map.json
 
+# Environment
+.env
+
 # Android Studio will place build artifacts here
 /android/app/debug
 /android/app/profile
 /android/app/release
+android/app/google-services.json
+
 # Node.js related
 node_modules/
 
 apphosting.local.yaml
+
+ios/Runner/GoogleService-Info.plist

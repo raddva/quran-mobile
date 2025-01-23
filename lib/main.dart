@@ -2,14 +2,18 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:quran_mobile/auth/signin_screen.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 void main() async {
+  await dotenv.load();
+  String apiKey = dotenv.env['GOOGLE_API_KEY'] ?? '';
+
   WidgetsFlutterBinding.ensureInitialized();
 
   if (kIsWeb) {
     await Firebase.initializeApp(
         options: FirebaseOptions(
-            apiKey: "AIzaSyBZ86BxztncUgPbD2bGoYHmv9x-d39jDI4",
+            apiKey: apiKey,
             authDomain: "alquran-tracker.web.app",
             databaseURL:
                 "https://quran-tracker-25-default-rtdb.asia-southeast1.firebasedatabase.app",
