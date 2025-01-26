@@ -5,7 +5,7 @@ import 'package:quran_mobile/auth/signin_screen.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 void main() async {
-  await dotenv.load();
+  await dotenv.load(fileName: "assets/.env");
   String apiKey = dotenv.env['GOOGLE_API_KEY'] ?? '';
 
   WidgetsFlutterBinding.ensureInitialized();
