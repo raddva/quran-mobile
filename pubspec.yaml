@@ -39,6 +39,8 @@ dependencies:
   firebase_auth: ^5.4.0
   flutter_dotenv: ^5.2.1
   flutter_native_splash: ^2.4.4
+  get: ^4.6.6
+  intl: ^0.20.2
 
 dev_dependencies:
   flutter_test:
