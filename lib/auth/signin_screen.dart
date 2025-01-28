@@ -55,13 +55,20 @@ class _LoginScreenState extends State<LoginScreen> {
               label: "Login",
               onPressed: _login,
             ),
+            const SizedBox(height: 10),
+            CustomButton(
+              label: "Signin with Google",
+              onPressed: () async {
+                await _auth.loginWithGoogle();
+              },
+            ),
             const SizedBox(height: 5),
             Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-              const Text("Already have an account? "),
+              const Text("Doesn't have any account? "),
               InkWell(
                 onTap: () => goToSignup(context),
                 child:
-                    const Text("Signup", style: TextStyle(color: Colors.red)),
+                    const Text("Sign Up", style: TextStyle(color: Colors.red)),
               )
             ]),
             const Spacer()
