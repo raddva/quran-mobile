@@ -4,6 +4,14 @@ import 'package:google_sign_in/google_sign_in.dart';
 class AuthService {
   final _auth = FirebaseAuth.instance;
 
+  Future<void> sendEmailVerifLink() async {
+    try {
+      await _auth.currentUser?.sendEmailVerification();
+    } catch (e) {
+      print(e.toString());
+    }
+  }
+
   Future<UserCredential?> loginWithGoogle() async {
     try {
       final googleUser = await GoogleSignIn().signIn();
@@ -17,6 +25,8 @@ class AuthService {
     } catch (e) {
       print(e.toString());
     }
+
+    return null;
   }
 
   Future<User?> createUserWithEmail(String email, String password) async {

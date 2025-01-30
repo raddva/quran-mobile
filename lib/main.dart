@@ -4,6 +4,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:quran_mobile/auth/signin_screen.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:quran_mobile/screens/onboarding.dart';
+import 'package:quran_mobile/widgets/wrapper.dart';
 
 void main() async {
   await dotenv.load(fileName: "assets/.env");
@@ -42,7 +43,8 @@ class MyApp extends StatelessWidget {
       ),
       debugShowCheckedModeBanner: false,
       // home: OnboardingScreen(),
-      home: LoginScreen(),
+      home: Wrapper(),
+      // home: LoginScreen(),
     );
   }
 }
