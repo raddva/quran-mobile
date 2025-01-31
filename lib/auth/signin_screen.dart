@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 import 'package:quran_mobile/auth/auth_service.dart';
+import 'package:quran_mobile/auth/forgot_password_screen.dart';
 import 'package:quran_mobile/auth/signin_screen.dart';
 import 'package:quran_mobile/auth/signup_screen.dart';
 import 'package:quran_mobile/screens/home.dart';
@@ -49,6 +50,19 @@ class _LoginScreenState extends State<LoginScreen> {
               hint: "Enter Password",
               label: "Password",
               controller: _password,
+            ),
+            Align(
+              alignment: Alignment.centerRight,
+              child: InkWell(
+                onTap: () {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ForgotPasswordScreen(),
+                      ));
+                },
+                child: Text("Forgot Password?"),
+              ),
             ),
             const SizedBox(height: 30),
             CustomButton(

@@ -93,9 +93,5 @@ class _SignupScreenState extends State<SignupScreen> {
   _signup() async {
     await _auth.createUserWithEmail(_email.text, _password.text);
     Navigator.pop(context);
-    // if (user != null) {
-    //   log("User Created Succesfully");
-    //   goToHome(context);
-    // }
   }
 }
