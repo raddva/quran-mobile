@@ -41,6 +41,7 @@ dependencies:
   flutter_native_splash: ^2.4.4
   get: ^4.6.6
   intl: ^0.20.2
+  google_sign_in: ^6.2.2
 
 dev_dependencies:
   flutter_test:

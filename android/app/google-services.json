@@ -13,7 +13,20 @@
           "package_name": "com.example.quran_mobile"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "422889200499-ap823khf38to7731m6dkmvpeos95s4pb.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.quran_mobile",
+            "certificate_hash": "9adf97a5101a694a97e6bb089066ad18ac7bba12"
+          }
+        },
+        {
+          "client_id": "422889200499-6g339rcr6es5dod66le7hjetiv83srbs.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyBYVZ_iIk8bfn8scEWaFC67xWPHNIsaVEo"
@@ -21,7 +34,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "422889200499-6g339rcr6es5dod66le7hjetiv83srbs.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "422889200499-m93g8909a6qpkbovjilqs2a3j19lq81f.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.quranMobile"
+              }
+            }
+          ]
         }
       }
     }

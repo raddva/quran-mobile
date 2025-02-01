@@ -41,8 +41,8 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
       ),
       debugShowCheckedModeBanner: false,
-      home: OnboardingScreen(),
-      // home: LoginScreen(),
+      // home: OnboardingScreen(),
+      home: LoginScreen(),
     );
   }
 }
