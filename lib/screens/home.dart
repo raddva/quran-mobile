@@ -1,6 +1,5 @@
 import 'package:quran_mobile/auth/auth_service.dart';
 import 'package:quran_mobile/auth/signin_screen.dart';
-import 'package:quran_mobile/auth/signup_screen.dart';
 import 'package:quran_mobile/widgets/button.dart';
 import 'package:flutter/material.dart';
 

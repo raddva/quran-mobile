@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:quran_mobile/auth/auth_service.dart';
 import 'package:quran_mobile/auth/forgot_password_screen.dart';
 import 'package:quran_mobile/auth/signin_screen.dart';
@@ -106,7 +104,7 @@ class _LoginScreenState extends State<LoginScreen> {
     final user = await _auth.loginWithEmail(_email.text, _password.text);
 
     if (user != null) {
-      log("User Logged In");
+      // log("User Logged In");
       goToHome(context);
     }
   }

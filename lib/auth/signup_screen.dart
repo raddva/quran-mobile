@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:quran_mobile/auth/auth_service.dart';
 import 'package:quran_mobile/auth/signin_screen.dart';
 import 'package:quran_mobile/screens/home.dart';

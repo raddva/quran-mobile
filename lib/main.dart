@@ -1,8 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:quran_mobile/auth/signin_screen.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:get/get.dart';
 import 'package:quran_mobile/screens/onboarding.dart';
 import 'package:quran_mobile/widgets/wrapper.dart';
 
@@ -35,16 +35,19 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return GetMaterialApp(
       title: 'Quran Mobile',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
       debugShowCheckedModeBanner: false,
-      // home: OnboardingScreen(),
-      home: Wrapper(),
-      // home: LoginScreen(),
+      home: OnboardingScreen(),
+      initialRoute: '/',
+      getPages: [
+        GetPage(name: '/', page: () => OnboardingScreen()),
+        GetPage(name: '/auth', page: () => Wrapper()),
+      ],
     );
   }
 }
