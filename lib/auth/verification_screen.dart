@@ -33,6 +33,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.grey[300],
       body: Align(
         alignment: Alignment.center,
         child: Padding(

@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:quran_mobile/auth/auth_service.dart';
 import 'package:quran_mobile/widgets/button.dart';
@@ -16,7 +17,17 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(),
+      backgroundColor: Colors.grey[300],
+      appBar: AppBar(
+        leading: IconButton(
+          icon: Icon(CupertinoIcons.back),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
+        backgroundColor: Colors.grey[300],
+        title: const Text('Reset Password'),
+      ),
       body: Padding(
         padding: EdgeInsets.symmetric(horizontal: 25),
         child: Column(

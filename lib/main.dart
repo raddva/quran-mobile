@@ -42,7 +42,8 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
       ),
       debugShowCheckedModeBanner: false,
-      home: OnboardingScreen(),
+      home: Wrapper(),
+      // home: OnboardingScreen(),
       initialRoute: '/',
       getPages: [
         GetPage(name: '/', page: () => OnboardingScreen()),

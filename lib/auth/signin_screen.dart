@@ -1,9 +1,11 @@
 import 'package:quran_mobile/auth/auth_service.dart';
 import 'package:quran_mobile/auth/forgot_password_screen.dart';
-import 'package:quran_mobile/auth/signin_screen.dart';
 import 'package:quran_mobile/auth/signup_screen.dart';
 import 'package:quran_mobile/screens/home.dart';
+import 'package:quran_mobile/utils/helpers.dart';
+import 'package:quran_mobile/utils/image_strings.dart';
 import 'package:quran_mobile/widgets/button.dart';
+import 'package:quran_mobile/widgets/square_tile.dart';
 import 'package:quran_mobile/widgets/textfield.dart';
 import 'package:flutter/material.dart';
 
@@ -30,61 +32,121 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 25),
-        child: Column(
-          children: [
-            const Spacer(),
-            const Text("Login",
-                style: TextStyle(fontSize: 40, fontWeight: FontWeight.w500)),
-            const SizedBox(height: 50),
-            CustomTextField(
-              hint: "Enter Email",
-              label: "Email",
-              controller: _email,
-            ),
-            const SizedBox(height: 20),
-            CustomTextField(
-              hint: "Enter Password",
-              label: "Password",
-              controller: _password,
-            ),
-            Align(
-              alignment: Alignment.centerRight,
-              child: InkWell(
-                onTap: () {
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => ForgotPasswordScreen(),
-                      ));
-                },
-                child: Text("Forgot Password?"),
+      backgroundColor: Colors.grey[300],
+      body: SafeArea(
+        child: Center(
+          child: Column(
+            children: [
+              SizedBox(height: 20),
+              Image(
+                image: AssetImage(TImages.signInImage),
+                width: THelperFunctions.screenWidth() * 0.5,
+                height: THelperFunctions.screenHeight() * 0.4,
               ),
-            ),
-            const SizedBox(height: 30),
-            CustomButton(
-              label: "Login",
-              onPressed: _login,
-            ),
-            const SizedBox(height: 10),
-            CustomButton(
-              label: "Signin with Google",
-              onPressed: () async {
-                await _auth.loginWithGoogle();
-              },
-            ),
-            const SizedBox(height: 5),
-            Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-              const Text("Doesn't have any account? "),
-              InkWell(
-                onTap: () => goToSignup(context),
-                child:
-                    const Text("Sign Up", style: TextStyle(color: Colors.red)),
-              )
-            ]),
-            const Spacer()
-          ],
+              SizedBox(height: 10),
+              Text(
+                "Welcome back! You've been missed!",
+                style: TextStyle(
+                  color: Colors.grey[700],
+                  fontSize: 16,
+                ),
+              ),
+              SizedBox(height: 15),
+              CustomTextField(
+                hint: "Enter Email",
+                label: "Email",
+                controller: _email,
+              ),
+              const SizedBox(height: 10),
+              CustomTextField(
+                hint: "Enter Password",
+                label: "Password",
+                controller: _password,
+                isPassword: true,
+              ),
+              SizedBox(height: 10),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 25.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    InkWell(
+                      onTap: () {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => ForgotPasswordScreen(),
+                            ));
+                      },
+                      child: Text(
+                        "Forgot Password?",
+                        style: TextStyle(
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(height: 15),
+              CustomButton(
+                label: "Sign In",
+                onPressed: _login,
+              ),
+              SizedBox(height: 20),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 25.0),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Divider(
+                        thickness: 0.5,
+                        color: Colors.grey[400],
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                      child: Text(
+                        'Or continue with',
+                        style: TextStyle(color: Colors.grey[700]),
+                      ),
+                    ),
+                    Expanded(
+                      child: Divider(
+                        thickness: 0.5,
+                        color: Colors.grey[400],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(height: 20),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SquareTile(imgPath: 'assets/Images/google-logo.png'),
+                ],
+              ),
+              SizedBox(height: 20),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text("Doesn't have any account?"),
+                  SizedBox(width: 4),
+                  InkWell(
+                    onTap: () => goToSignup(context),
+                    child: Text(
+                      'Sign Up',
+                      style: TextStyle(
+                        color: Colors.blue,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -104,7 +166,6 @@ class _LoginScreenState extends State<LoginScreen> {
     final user = await _auth.loginWithEmail(_email.text, _password.text);
 
     if (user != null) {
-      // log("User Logged In");
       goToHome(context);
     }
   }
