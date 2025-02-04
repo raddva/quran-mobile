@@ -1,6 +1,9 @@
+import 'package:flutter/cupertino.dart';
 import 'package:quran_mobile/auth/auth_service.dart';
 import 'package:quran_mobile/auth/signin_screen.dart';
 import 'package:quran_mobile/screens/home.dart';
+import 'package:quran_mobile/utils/helpers.dart';
+import 'package:quran_mobile/utils/image_strings.dart';
 import 'package:quran_mobile/widgets/button.dart';
 import 'package:quran_mobile/widgets/textfield.dart';
 import 'package:flutter/material.dart';
@@ -30,49 +33,72 @@ class _SignupScreenState extends State<SignupScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 25),
-        child: Column(
-          children: [
-            const Spacer(),
-            const Text("Signup",
-                style: TextStyle(fontSize: 40, fontWeight: FontWeight.w500)),
-            const SizedBox(
-              height: 50,
-            ),
-            CustomTextField(
-              hint: "Enter Name",
-              label: "Name",
-              controller: _name,
-            ),
-            const SizedBox(height: 20),
-            CustomTextField(
-              hint: "Enter Email",
-              label: "Email",
-              controller: _email,
-            ),
-            const SizedBox(height: 20),
-            CustomTextField(
-              hint: "Enter Password",
-              label: "Password",
-              isPassword: true,
-              controller: _password,
-            ),
-            const SizedBox(height: 30),
-            CustomButton(
-              label: "Signup",
-              onPressed: _signup,
-            ),
-            const SizedBox(height: 5),
-            Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-              const Text("Already have an account? "),
-              InkWell(
-                onTap: () => goToLogin(context),
-                child: const Text("Login", style: TextStyle(color: Colors.red)),
-              )
-            ]),
-            const Spacer()
-          ],
+      backgroundColor: Colors.grey[300],
+      body: SafeArea(
+        child: Center(
+          child: Column(
+            children: [
+              SizedBox(height: 20),
+              Image(
+                image: AssetImage(TImages.signUpImage),
+                width: THelperFunctions.screenWidth() * 0.5,
+                height: THelperFunctions.screenHeight() * 0.4,
+              ),
+              SizedBox(height: 10),
+              Text(
+                "Hello, Please Register to Continue.",
+                style: TextStyle(
+                  color: Colors.grey[700],
+                  fontSize: 16,
+                ),
+              ),
+              SizedBox(height: 15),
+              CustomTextField(
+                hint: "Enter Name",
+                label: "Name",
+                controller: _name,
+                icon: CupertinoIcons.person,
+              ),
+              SizedBox(height: 10),
+              CustomTextField(
+                hint: "Enter Email",
+                label: "Email",
+                controller: _email,
+                icon: CupertinoIcons.mail,
+              ),
+              const SizedBox(height: 10),
+              CustomTextField(
+                hint: "Enter Password",
+                label: "Password",
+                controller: _password,
+                isPassword: true,
+                icon: CupertinoIcons.lock,
+              ),
+              SizedBox(height: 15),
+              CustomButton(
+                label: "Sign Up",
+                onPressed: _signup,
+              ),
+              SizedBox(height: 20),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text("Already have an account?"),
+                  SizedBox(width: 4),
+                  InkWell(
+                    onTap: () => goToLogin(context),
+                    child: Text(
+                      'Sign In',
+                      style: TextStyle(
+                        color: Colors.blue,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );

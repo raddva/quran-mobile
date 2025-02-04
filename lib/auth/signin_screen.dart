@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:quran_mobile/auth/auth_service.dart';
 import 'package:quran_mobile/auth/forgot_password_screen.dart';
 import 'package:quran_mobile/auth/signup_screen.dart';
@@ -56,13 +57,15 @@ class _LoginScreenState extends State<LoginScreen> {
                 hint: "Enter Email",
                 label: "Email",
                 controller: _email,
+                icon: CupertinoIcons.mail,
               ),
-              const SizedBox(height: 10),
+              SizedBox(height: 10),
               CustomTextField(
                 hint: "Enter Password",
                 label: "Password",
                 controller: _password,
                 isPassword: true,
+                icon: CupertinoIcons.lock,
               ),
               SizedBox(height: 10),
               Padding(

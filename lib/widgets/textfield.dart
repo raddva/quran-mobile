@@ -1,26 +1,38 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-class CustomTextField extends StatelessWidget {
-  const CustomTextField(
-      {super.key,
-      required this.hint,
-      required this.label,
-      this.controller,
-      this.isPassword = false});
+class CustomTextField extends StatefulWidget {
+  const CustomTextField({
+    super.key,
+    required this.hint,
+    required this.label,
+    this.controller,
+    this.isPassword = false,
+    this.icon,
+  });
+
   final String hint;
   final String label;
   final bool isPassword;
   final TextEditingController? controller;
+  final IconData? icon;
+
+  @override
+  State<CustomTextField> createState() => _CustomTextFieldState();
+}
+
+class _CustomTextFieldState extends State<CustomTextField> {
+  bool _isObscure = true;
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 25.0),
       child: TextField(
-        obscureText: isPassword,
-        controller: controller,
+        obscureText: widget.isPassword ? _isObscure : false,
+        controller: widget.controller,
         decoration: InputDecoration(
-          hintText: hint,
+          hintText: widget.hint,
           enabledBorder: const OutlineInputBorder(
             borderSide: BorderSide(color: Colors.white),
           ),
@@ -29,7 +41,20 @@ class CustomTextField extends StatelessWidget {
           ),
           fillColor: Colors.grey.shade200,
           filled: true,
-          label: Text(label),
+          label: Text(widget.label),
+          prefixIcon: widget.icon != null ? Icon(widget.icon) : null,
+          suffixIcon: widget.isPassword
+              ? IconButton(
+                  icon: Icon(_isObscure
+                      ? CupertinoIcons.eye
+                      : CupertinoIcons.eye_slash),
+                  onPressed: () {
+                    setState(() {
+                      _isObscure = !_isObscure;
+                    });
+                  },
+                )
+              : null,
         ),
       ),
     );
