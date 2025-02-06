@@ -39,15 +39,15 @@ class MyApp extends StatelessWidget {
     return GetMaterialApp(
       title: 'Quran Mobile',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),
         useMaterial3: true,
       ),
+      // home: BottomNavbar(),
       debugShowCheckedModeBanner: false,
-      home: BottomNavbar(),
-      // home: OnboardingScreen(),
-      initialRoute: '/',
+      initialRoute: '/home',
       getPages: [
         GetPage(name: '/', page: () => OnboardingScreen()),
+        GetPage(name: '/home', page: () => BottomNavbar()),
         GetPage(name: '/auth', page: () => Wrapper()),
       ],
     );
