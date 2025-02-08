@@ -2,7 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:quran_mobile/auth/auth_service.dart';
 import 'package:quran_mobile/auth/forgot_password_screen.dart';
 import 'package:quran_mobile/auth/signup_screen.dart';
-import 'package:quran_mobile/screens/home.dart';
+import 'package:quran_mobile/components/bottom_navbar.dart';
 import 'package:quran_mobile/utils/helpers.dart';
 import 'package:quran_mobile/utils/image_strings.dart';
 import 'package:quran_mobile/widgets/button.dart';
@@ -162,7 +162,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   goToHome(BuildContext context) => Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => const HomeScreen()),
+        MaterialPageRoute(builder: (context) => const BottomNavbar()),
       );
 
   _login() async {

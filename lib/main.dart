@@ -41,10 +41,11 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),
         useMaterial3: true,
+        fontFamily: 'Inter',
       ),
       // home: BottomNavbar(),
       debugShowCheckedModeBanner: false,
-      initialRoute: '/home',
+      initialRoute: '/',
       getPages: [
         GetPage(name: '/', page: () => OnboardingScreen()),
         GetPage(name: '/home', page: () => BottomNavbar()),

@@ -29,20 +29,20 @@
     },
     "singleProjectMode": true
   },
-  "dataconnect": {
-    "source": "dataconnect"
-  },
   "firestore": {
     "rules": "firestore.rules",
     "indexes": "firestore.indexes.json"
   },
   "hosting": {
     "site": "alquran-tracker",
-    "public": "public",
-    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"]
-  },
-  "storage": {
-    "rules": "storage.rules"
+    "public": "build/web",
+    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "index.html"
+      }
+    ]
   },
   "remoteconfig": {
     "template": "remoteconfig.template.json"

@@ -1,6 +1,7 @@
+import 'package:dots_indicator/dots_indicator.dart';
 import 'package:quran_mobile/auth/signin_screen.dart';
 import 'package:quran_mobile/auth/verification_screen.dart';
-import 'package:quran_mobile/screens/home.dart';
+import 'package:quran_mobile/components/bottom_navbar.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -14,8 +15,16 @@ class Wrapper extends StatelessWidget {
           stream: FirebaseAuth.instance.authStateChanges(),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(
-                child: CircularProgressIndicator(),
+              return Center(
+                child: DotsIndicator(
+                  dotsCount: 3,
+                  position: 1,
+                  decorator: DotsDecorator(
+                    activeColor: Colors.blue,
+                    size: Size(10.0, 10.0),
+                    activeSize: Size(14.0, 14.0),
+                  ),
+                ),
               );
             } else if (snapshot.hasError) {
               return const Center(
@@ -26,7 +35,7 @@ class Wrapper extends StatelessWidget {
                 return const LoginScreen();
               } else {
                 if (snapshot.data?.emailVerified == true) {
-                  return HomeScreen();
+                  return BottomNavbar();
                 } else {}
                 return const VerificationScreen();
               }

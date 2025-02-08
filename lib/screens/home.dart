@@ -39,9 +39,9 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Al Quran')),
+      // appBar: AppBar(title: Text('Al Quran')),
       body: surahList.isEmpty
-          ? Center(child: CircularProgressIndicator())
+          ? Center(child: LinearProgressIndicator())
           : ListView.builder(
               itemCount: surahList.length,
               itemBuilder: (context, index) {
