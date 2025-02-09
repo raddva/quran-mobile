@@ -115,7 +115,7 @@ class _SignupScreenState extends State<SignupScreen> {
       );
 
   _signup() async {
-    await _auth.createUserWithEmail(_email.text, _password.text);
+    await _auth.createUserWithEmail(_name.text, _email.text, _password.text);
     Navigator.pop(context);
   }
 }

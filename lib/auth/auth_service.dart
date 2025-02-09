@@ -1,8 +1,10 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
 class AuthService {
   final _auth = FirebaseAuth.instance;
+  final _firestore = FirebaseFirestore.instance;
 
   Future<void> sendEmailVerifLink() async {
     try {
@@ -37,17 +39,32 @@ class AuthService {
     return null;
   }
 
-  Future<User?> createUserWithEmail(String email, String password) async {
+  Future<User?> createUserWithEmail(
+      String name, String email, String password) async {
     try {
       final cred = await _auth.createUserWithEmailAndPassword(
           email: email, password: password);
-      return cred.user;
+      final user = cred.user;
+
+      if (user != null) {
+        await user.updateProfile(displayName: name);
+        await user.reload();
+        final updatedUser = _auth.currentUser;
+
+        await _firestore.collection("users").doc(user.uid).set({
+          "uid": user.uid,
+          "display_name": updatedUser?.displayName,
+          "email": user.email,
+          "created_at": FieldValue.serverTimestamp(),
+        });
+      }
+
+      return user;
     } on FirebaseAuthException catch (e) {
-      // exceptionHandler(e.code);
       print('Error code: ${e.code}');
       print('Error message: ${e.message}');
     } catch (e) {
-      print("error");
+      print(e);
     }
 
     return null;
