@@ -23,12 +23,14 @@ class _SubHomeScreenState extends State<SubHomeScreen> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
   Set<int> bookmarkedAyahs = {};
+  Map<int, String> ayahNotes = {};
 
   @override
   void initState() {
     super.initState();
     fetchSurahDetails();
-    fetchBookmarkedAyahs();
+    fetchBookmarks();
+    fetchNotes();
   }
 
   Future<void> fetchSurahDetails() async {
@@ -51,40 +53,62 @@ class _SubHomeScreenState extends State<SubHomeScreen> {
     await _audioPlayer.play(UrlSource(url));
   }
 
-  Future<void> fetchBookmarkedAyahs() async {
+  Future<void> fetchBookmarks() async {
     final user = _auth.currentUser;
     if (user == null) return;
 
-    final bookmarkRef =
-        _firestore.collection("users").doc(user.uid).collection("bookmarks");
+    final bookmarkRef = FirebaseFirestore.instance
+        .collection("users")
+        .doc(user.uid)
+        .collection("bookmarks");
 
-    final snapshot = await bookmarkRef.get();
+    final querySnapshot = await bookmarkRef.get();
+
     setState(() {
-      bookmarkedAyahs = snapshot.docs.map((doc) => int.parse(doc.id)).toSet();
+      bookmarkedAyahs =
+          querySnapshot.docs.map((doc) => doc['ayah'] as int).toSet();
     });
   }
 
-  Future<void> toggleBookmark(int ayahNumber, String arabicText) async {
+  Future<void> fetchNotes() async {
     final user = _auth.currentUser;
     if (user == null) return;
 
-    final bookmarkRef =
-        _firestore.collection("users").doc(user.uid).collection("bookmarks");
+    final notesRef =
+        _firestore.collection("users").doc(user.uid).collection("notes");
 
-    if (bookmarkedAyahs.contains(ayahNumber)) {
-      await bookmarkRef.doc('$ayahNumber').delete();
+    final querySnapshot = await notesRef.get();
+
+    setState(() {
+      ayahNotes = {
+        for (var doc in querySnapshot.docs)
+          doc['ayah'] as int: doc['note'] as String
+      };
+    });
+  }
+
+  void toggleBookmark(int ayahNumber) async {
+    final user = _auth.currentUser;
+    if (user == null) return;
+
+    final bookmarkRef = FirebaseFirestore.instance
+        .collection("users")
+        .doc(user.uid)
+        .collection("bookmarks")
+        .doc('$ayahNumber');
+
+    final doc = await bookmarkRef.get();
+
+    if (doc.exists) {
+      await bookmarkRef.delete();
       bookmarkedAyahs.remove(ayahNumber);
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text("Bookmark removed!")));
     } else {
-      await bookmarkRef.doc('$ayahNumber').set({
+      await bookmarkRef.set({
         "surah": widget.surahNumber,
         "ayah": ayahNumber,
         "timestamp": FieldValue.serverTimestamp(),
       });
       bookmarkedAyahs.add(ayahNumber);
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text("Bookmark added!")));
     }
 
     setState(() {});
@@ -94,15 +118,16 @@ class _SubHomeScreenState extends State<SubHomeScreen> {
     final user = _auth.currentUser;
     if (user == null) return;
 
-    String note = "";
+    String existingNote = ayahNotes[ayahNumber] ?? "";
+    TextEditingController noteController =
+        TextEditingController(text: existingNote);
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text("Add Note"),
+        title: Text("Add/Edit Note"),
         content: TextField(
-          onChanged: (value) {
-            note = value;
-          },
+          controller: noteController,
           decoration: InputDecoration(hintText: "Enter your note"),
         ),
         actions: [
@@ -115,18 +140,26 @@ class _SubHomeScreenState extends State<SubHomeScreen> {
               final notesRef = _firestore
                   .collection("users")
                   .doc(user.uid)
-                  .collection("bookmarks");
+                  .collection("notes")
+                  .doc('$ayahNumber');
 
-              await notesRef.doc('$ayahNumber').set({
-                "surah": widget.surahNumber,
-                "ayah": ayahNumber,
-                "note": note,
-                "timestamp": FieldValue.serverTimestamp(),
-              }, SetOptions(merge: true));
+              if (noteController.text.isEmpty) {
+                await notesRef.delete();
+                ayahNotes.remove(ayahNumber);
+              } else {
+                await notesRef.set({
+                  "surah": widget.surahNumber,
+                  "ayah": ayahNumber,
+                  "note": noteController.text,
+                  "timestamp": FieldValue.serverTimestamp(),
+                });
+                ayahNotes[ayahNumber] = noteController.text;
+              }
 
+              setState(() {});
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text("Note added for Ayah $ayahNumber")));
+                  SnackBar(content: Text("Note saved for Ayah $ayahNumber")));
             },
             child: Text("Save"),
           ),
@@ -231,8 +264,7 @@ class _SubHomeScreenState extends State<SubHomeScreen> {
                                                 : null,
                                           ),
                                           onPressed: () {
-                                            toggleBookmark(
-                                                ayahNumber, ayat['teksArab']);
+                                            toggleBookmark(ayahNumber);
                                           },
                                         ),
                                         IconButton(
