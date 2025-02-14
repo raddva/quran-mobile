@@ -124,18 +124,25 @@ class _BookmarkScreenState extends State<BookmarkScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.green[50],
       appBar: AppBar(
-        title: Text("Bookmarks & Notes"),
+        title: Text(
+          "Bookmarks & Notes",
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        centerTitle: true,
+        backgroundColor: Colors.transparent,
         bottom: TabBar(
           controller: _tabController,
-          tabs: [
-            Tab(icon: Icon(Icons.bookmark), text: "Bookmarks"),
-            Tab(icon: Icon(Icons.note), text: "Notes"),
+          indicatorColor: Colors.white,
+          tabs: const [
+            Tab(text: "Bookmarks"),
+            Tab(text: "Notes"),
           ],
         ),
       ),
       body: isLoading
-          ? Center(child: CircularProgressIndicator())
+          ? Center(child: CircularProgressIndicator(color: Colors.green))
           : TabBarView(
               controller: _tabController,
               children: [
@@ -150,21 +157,30 @@ class _BookmarkScreenState extends State<BookmarkScreen>
                           int surahNumber = bookmark['surah'];
                           int ayahNumber = bookmark['ayah'];
 
-                          return ListTile(
-                            title: Text("$surahName $surahNumber:$ayahNumber"),
-                            trailing: IconButton(
-                              icon: Icon(Icons.delete, color: Colors.red),
-                              onPressed: () => deleteBookmark(bookmark["id"]),
+                          return Card(
+                            color: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12.0),
                             ),
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) =>
-                                      SubHomeScreen(surahNumber: surahNumber),
-                                ),
-                              );
-                            },
+                            elevation: 3,
+                            margin: EdgeInsets.all(8.0),
+                            child: ListTile(
+                              title:
+                                  Text("$surahName $surahNumber:$ayahNumber"),
+                              trailing: IconButton(
+                                icon: Icon(Icons.delete, color: Colors.red),
+                                onPressed: () => deleteBookmark(bookmark["id"]),
+                              ),
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        SubHomeScreen(surahNumber: surahNumber),
+                                  ),
+                                );
+                              },
+                            ),
                           );
                         },
                       ),
@@ -178,22 +194,31 @@ class _BookmarkScreenState extends State<BookmarkScreen>
                               surahNames[note['surah']] ?? "Loading...";
                           int surahNumber = note['surah'];
                           int ayahNumber = note['ayah'];
-                          return ListTile(
-                            title: Text("$surahName $surahNumber:$ayahNumber"),
-                            subtitle: Text(note['note']),
-                            trailing: IconButton(
-                              icon: Icon(Icons.delete, color: Colors.red),
-                              onPressed: () => deleteNote(note["id"]),
+                          return Card(
+                            color: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12.0),
                             ),
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) =>
-                                      SubHomeScreen(surahNumber: surahNumber),
-                                ),
-                              );
-                            },
+                            elevation: 3,
+                            margin: EdgeInsets.all(8.0),
+                            child: ListTile(
+                              title:
+                                  Text("$surahName $surahNumber:$ayahNumber"),
+                              subtitle: Text(note['note']),
+                              trailing: IconButton(
+                                icon: Icon(Icons.delete, color: Colors.red),
+                                onPressed: () => deleteNote(note["id"]),
+                              ),
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        SubHomeScreen(surahNumber: surahNumber),
+                                  ),
+                                );
+                              },
+                            ),
                           );
                         },
                       ),
