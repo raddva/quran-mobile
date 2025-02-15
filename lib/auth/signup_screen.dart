@@ -33,7 +33,7 @@ class _SignupScreenState extends State<SignupScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[300],
+      backgroundColor: Colors.green[50],
       body: SafeArea(
         child: Center(
           child: Column(
@@ -48,7 +48,7 @@ class _SignupScreenState extends State<SignupScreen> {
               Text(
                 "Hello, Please Register to Continue.",
                 style: TextStyle(
-                  color: Colors.grey[700],
+                  color: Colors.green[700],
                   fontSize: 16,
                 ),
               ),

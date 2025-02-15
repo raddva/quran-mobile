@@ -82,6 +82,31 @@ class AuthService {
     return null;
   }
 
+  Future<bool> updateUserInfo(String name, String email) async {
+    try {
+      User? user = _auth.currentUser;
+
+      if (user != null) {
+        await user.updateProfile(displayName: name);
+
+        await user.verifyBeforeUpdateEmail(email);
+
+        await user.reload();
+        final updatedUser = _auth.currentUser;
+
+        await _firestore.collection("users").doc(user.uid).update({
+          "display_name": updatedUser?.displayName,
+          "email": updatedUser?.email,
+        });
+
+        return true;
+      }
+    } catch (e) {
+      print("Error updating user info: $e");
+    }
+    return false;
+  }
+
   Future<void> signOut() async {
     try {
       await _auth.signOut();

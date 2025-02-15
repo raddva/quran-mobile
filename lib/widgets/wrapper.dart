@@ -4,6 +4,7 @@ import 'package:quran_mobile/auth/verification_screen.dart';
 import 'package:quran_mobile/components/bottom_navbar.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 class Wrapper extends StatelessWidget {
   const Wrapper({super.key});
@@ -32,12 +33,15 @@ class Wrapper extends StatelessWidget {
               );
             } else {
               if (snapshot.data == null) {
-                return const LoginScreen();
+                return LoginScreen();
               } else {
                 if (snapshot.data?.emailVerified == true) {
+                  Future.delayed(Duration.zero, () {
+                    Get.offNamed('/home');
+                  });
                   return BottomNavbar();
-                } else {}
-                return const VerificationScreen();
+                }
+                return VerificationScreen();
               }
             }
           }),

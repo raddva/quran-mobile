@@ -2,13 +2,13 @@ import 'package:flutter/cupertino.dart';
 import 'package:quran_mobile/auth/auth_service.dart';
 import 'package:quran_mobile/auth/forgot_password_screen.dart';
 import 'package:quran_mobile/auth/signup_screen.dart';
-import 'package:quran_mobile/components/bottom_navbar.dart';
 import 'package:quran_mobile/utils/helpers.dart';
 import 'package:quran_mobile/utils/image_strings.dart';
 import 'package:quran_mobile/widgets/button.dart';
 import 'package:quran_mobile/widgets/square_tile.dart';
 import 'package:quran_mobile/widgets/textfield.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -33,7 +33,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[300],
+      backgroundColor: Colors.green[50],
       body: SafeArea(
         child: Center(
           child: Column(
@@ -48,7 +48,7 @@ class _LoginScreenState extends State<LoginScreen> {
               Text(
                 "Welcome back! You've been missed!",
                 style: TextStyle(
-                  color: Colors.grey[700],
+                  color: Colors.green[700],
                   fontSize: 16,
                 ),
               ),
@@ -84,7 +84,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       child: Text(
                         "Forgot Password?",
                         style: TextStyle(
-                          color: Colors.grey[600],
+                          color: Colors.green[600],
                         ),
                       ),
                     ),
@@ -104,20 +104,20 @@ class _LoginScreenState extends State<LoginScreen> {
                     Expanded(
                       child: Divider(
                         thickness: 0.5,
-                        color: Colors.grey[400],
+                        color: Colors.green[400],
                       ),
                     ),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 10.0),
                       child: Text(
                         'Or continue with',
-                        style: TextStyle(color: Colors.grey[700]),
+                        style: TextStyle(color: Colors.green[700]),
                       ),
                     ),
                     Expanded(
                       child: Divider(
                         thickness: 0.5,
-                        color: Colors.grey[400],
+                        color: Colors.green[400],
                       ),
                     ),
                   ],
@@ -160,10 +160,9 @@ class _LoginScreenState extends State<LoginScreen> {
         MaterialPageRoute(builder: (context) => const SignupScreen()),
       );
 
-  goToHome(BuildContext context) => Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => const BottomNavbar()),
-      );
+  goToHome(BuildContext context) {
+    Get.offNamed('/home');
+  }
 
   _login() async {
     final user = await _auth.loginWithEmail(_email.text, _password.text);
