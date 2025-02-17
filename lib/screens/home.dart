@@ -52,17 +52,21 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.green[50],
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.all(8.0),
+            padding: const EdgeInsets.all(16.0),
             child: TextField(
               controller: searchController,
               decoration: InputDecoration(
+                filled: true,
+                fillColor: Colors.white,
                 hintText: 'Search Surah...',
-                prefixIcon: Icon(Icons.search),
+                prefixIcon: Icon(Icons.search, color: Colors.green),
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8.0),
+                  borderRadius: BorderRadius.circular(12.0),
+                  borderSide: BorderSide.none,
                 ),
               ),
               onChanged: filterSurahs,
@@ -70,45 +74,72 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           Expanded(
             child: filteredSurahList.isEmpty
-                ? Center(child: LinearProgressIndicator())
+                ? Center(child: CircularProgressIndicator(color: Colors.green))
                 : ListView.builder(
                     itemCount: filteredSurahList.length,
                     itemBuilder: (context, index) {
                       final surah = filteredSurahList[index];
-                      return ListTile(
-                        leading: Text('${surah.number}',
-                            style: TextStyle(
-                                fontSize: 18, fontWeight: FontWeight.bold)),
-                        title: Text(surah.name,
-                            style: TextStyle(fontWeight: FontWeight.bold)),
-                        subtitle: Row(
-                          children: [
-                            Text(
-                              surah.translation,
-                              style: TextStyle(fontWeight: FontWeight.bold),
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16.0, vertical: 8.0),
+                        child: Card(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12.0),
+                          ),
+                          elevation: 3,
+                          child: ListTile(
+                            contentPadding: EdgeInsets.all(12.0),
+                            leading: CircleAvatar(
+                              backgroundColor: Colors.green[100],
+                              child: Text(
+                                '${surah.number}',
+                                style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.green[800]),
+                              ),
                             ),
-                            SizedBox(width: 5),
-                            Image.asset(
-                              surah.tempatTurun == "Mekah"
-                                  ? 'assets/Icons/mecca.png'
-                                  : 'assets/Icons/madina.png',
-                              width: 15,
-                              height: 15,
+                            title: Text(
+                              surah.name,
+                              style: TextStyle(
+                                  fontWeight: FontWeight.bold, fontSize: 16),
                             ),
-                          ],
+                            subtitle: Row(
+                              children: [
+                                Text(
+                                  surah.translation,
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.w500,
+                                      fontSize: 14),
+                                ),
+                                SizedBox(width: 5),
+                                Image.asset(
+                                  surah.tempatTurun == "Mekah"
+                                      ? 'assets/Icons/mecca.png'
+                                      : 'assets/Icons/madina.png',
+                                  width: 15,
+                                  height: 15,
+                                ),
+                              ],
+                            ),
+                            trailing: Text(
+                              surah.arabic,
+                              style: TextStyle(
+                                  fontSize: 20,
+                                  fontFamily: 'Amiri',
+                                  color: Colors.green[900]),
+                            ),
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      SubHomeScreen(surahNumber: surah.number),
+                                ),
+                              );
+                            },
+                          ),
                         ),
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  SubHomeScreen(surahNumber: surah.number),
-                            ),
-                          );
-                        },
-                        trailing: Text(surah.arabic,
-                            style:
-                                TextStyle(fontSize: 20, fontFamily: 'Amiri')),
                       );
                     },
                   ),

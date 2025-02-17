@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:http/http.dart' as http;
@@ -28,9 +29,16 @@ class _SubHomeScreenState extends State<SubHomeScreen> {
   @override
   void initState() {
     super.initState();
+    _audioPlayer.setReleaseMode(ReleaseMode.stop);
     fetchSurahDetails();
     fetchBookmarks();
     fetchNotes();
+  }
+
+  @override
+  void dispose() {
+    _audioPlayer.dispose();
+    super.dispose();
   }
 
   Future<void> fetchSurahDetails() async {
@@ -49,8 +57,16 @@ class _SubHomeScreenState extends State<SubHomeScreen> {
   }
 
   void playAudio(String url) async {
-    await _audioPlayer.stop();
-    await _audioPlayer.play(UrlSource(url));
+    try {
+      await _audioPlayer.stop();
+      await _audioPlayer.setSourceUrl(url);
+      await _audioPlayer.resume();
+    } catch (e) {
+      print("Error playing audio: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error playing audio")),
+      );
+    }
   }
 
   Future<void> fetchBookmarks() async {
@@ -62,7 +78,8 @@ class _SubHomeScreenState extends State<SubHomeScreen> {
         .doc(user.uid)
         .collection("bookmarks");
 
-    final querySnapshot = await bookmarkRef.get();
+    final querySnapshot =
+        await bookmarkRef.where("surah", isEqualTo: widget.surahNumber).get();
 
     setState(() {
       bookmarkedAyahs =
@@ -77,7 +94,8 @@ class _SubHomeScreenState extends State<SubHomeScreen> {
     final notesRef =
         _firestore.collection("users").doc(user.uid).collection("notes");
 
-    final querySnapshot = await notesRef.get();
+    final querySnapshot =
+        await notesRef.where("surah", isEqualTo: widget.surahNumber).get();
 
     setState(() {
       ayahNotes = {
@@ -95,23 +113,38 @@ class _SubHomeScreenState extends State<SubHomeScreen> {
         .collection("users")
         .doc(user.uid)
         .collection("bookmarks")
-        .doc('$ayahNumber');
+        .where("surah", isEqualTo: widget.surahNumber)
+        .where("ayah", isEqualTo: ayahNumber);
 
-    final doc = await bookmarkRef.get();
+    final querySnapshot = await bookmarkRef.get();
 
-    if (doc.exists) {
-      await bookmarkRef.delete();
-      bookmarkedAyahs.remove(ayahNumber);
+    if (querySnapshot.docs.isNotEmpty) {
+      final docId = querySnapshot.docs.first.id;
+      await FirebaseFirestore.instance
+          .collection("users")
+          .doc(user.uid)
+          .collection("bookmarks")
+          .doc(docId)
+          .delete();
+
+      setState(() {
+        bookmarkedAyahs.remove(ayahNumber);
+      });
     } else {
-      await bookmarkRef.set({
+      await FirebaseFirestore.instance
+          .collection("users")
+          .doc(user.uid)
+          .collection("bookmarks")
+          .add({
         "surah": widget.surahNumber,
         "ayah": ayahNumber,
         "timestamp": FieldValue.serverTimestamp(),
       });
-      bookmarkedAyahs.add(ayahNumber);
-    }
 
-    setState(() {});
+      setState(() {
+        bookmarkedAyahs.add(ayahNumber);
+      });
+    }
   }
 
   Future<void> addNotes(int ayahNumber) async {
@@ -141,25 +174,71 @@ class _SubHomeScreenState extends State<SubHomeScreen> {
                   .collection("users")
                   .doc(user.uid)
                   .collection("notes")
-                  .doc('$ayahNumber');
+                  .where("surah", isEqualTo: widget.surahNumber)
+                  .where("ayah", isEqualTo: ayahNumber);
 
-              if (noteController.text.isEmpty) {
-                await notesRef.delete();
-                ayahNotes.remove(ayahNumber);
+              final querySnapshot = await notesRef.get();
+
+              if (querySnapshot.docs.isNotEmpty) {
+                final docId = querySnapshot.docs.first.id;
+
+                if (noteController.text.isEmpty) {
+                  await _firestore
+                      .collection("users")
+                      .doc(user.uid)
+                      .collection("notes")
+                      .doc(docId)
+                      .delete();
+
+                  setState(() {
+                    ayahNotes.remove(ayahNumber);
+                  });
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                      content: Text("Note removed for Ayah $ayahNumber")));
+                } else {
+                  await _firestore
+                      .collection("users")
+                      .doc(user.uid)
+                      .collection("notes")
+                      .doc(docId)
+                      .update({
+                    "note": noteController.text,
+                    "timestamp": FieldValue.serverTimestamp(),
+                  });
+
+                  setState(() {
+                    ayahNotes[ayahNumber] = noteController.text;
+                  });
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                      content: Text("Note updated for Ayah $ayahNumber")));
+                }
               } else {
-                await notesRef.set({
-                  "surah": widget.surahNumber,
-                  "ayah": ayahNumber,
-                  "note": noteController.text,
-                  "timestamp": FieldValue.serverTimestamp(),
-                });
-                ayahNotes[ayahNumber] = noteController.text;
+                if (noteController.text.isNotEmpty) {
+                  await _firestore
+                      .collection("users")
+                      .doc(user.uid)
+                      .collection("notes")
+                      .add({
+                    "surah": widget.surahNumber,
+                    "ayah": ayahNumber,
+                    "note": noteController.text,
+                    "timestamp": FieldValue.serverTimestamp(),
+                  });
+
+                  setState(() {
+                    ayahNotes[ayahNumber] = noteController.text;
+                  });
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                      content: Text("Note added for Ayah $ayahNumber")));
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                      content:
+                          Text("Note cannot be empty for Ayah $ayahNumber")));
+                }
               }
 
               setState(() {});
               Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text("Note saved for Ayah $ayahNumber")));
             },
             child: Text("Save"),
           ),
@@ -171,9 +250,92 @@ class _SubHomeScreenState extends State<SubHomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(surahDetail?['namaLatin'] ?? 'Loading...')),
+      backgroundColor: Colors.green[50],
+      appBar: AppBar(
+        backgroundColor: Colors.green[50],
+        title: Text(
+          surahDetail?['namaLatin'] ?? 'Loading...',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        centerTitle: true,
+        leading: IconButton(
+          icon: Icon(CupertinoIcons.chevron_back),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
+        actions: [
+          IconButton(
+            icon: Icon(CupertinoIcons.info),
+            onPressed: () {
+              showModalBottomSheet(
+                context: context,
+                shape: RoundedRectangleBorder(
+                  borderRadius:
+                      BorderRadius.vertical(top: Radius.circular(16.0)),
+                ),
+                backgroundColor: Colors.white,
+                isScrollControlled: true,
+                builder: (context) {
+                  return Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: SingleChildScrollView(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Center(
+                            child: Container(
+                              width: 40,
+                              height: 5,
+                              margin: EdgeInsets.only(bottom: 10),
+                              decoration: BoxDecoration(
+                                color: Colors.grey[400],
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
+                          ),
+                          Text(
+                            "${surahDetail?['namaLatin']} - ${surahDetail?['arti']}",
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.green[800],
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                          SizedBox(height: 5),
+                          Text(
+                            "(${surahDetail?['jumlahAyat']} Ayat)",
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.grey[600],
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                          SizedBox(height: 10),
+                          Divider(),
+                          SizedBox(height: 10),
+                          Html(
+                            data: surahDetail?['deskripsi'] ??
+                                "No description available.",
+                          ),
+                          SizedBox(height: 20),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              );
+            },
+          ),
+        ],
+      ),
       body: isLoading
-          ? Center(child: LinearProgressIndicator())
+          ? Center(child: CircularProgressIndicator(color: Colors.green))
           : Padding(
               padding: const EdgeInsets.all(16.0),
               child: Column(
@@ -186,24 +348,10 @@ class _SubHomeScreenState extends State<SubHomeScreen> {
                         fontSize: 48,
                         fontWeight: FontWeight.bold,
                         fontFamily: 'Amiri',
+                        color: Colors.green[900],
                       ),
                     ),
                   ),
-                  SizedBox(height: 10),
-                  Center(
-                    child: Text(
-                      '${surahDetail?['namaLatin']} - ${surahDetail?['arti']} (${surahDetail?['jumlahAyat']})',
-                      style:
-                          TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-                    ),
-                  ),
-                  SizedBox(height: 10),
-                  SizedBox(height: 10),
-                  Html(
-                    data: surahDetail?['deskripsi'] ??
-                        "No description available.",
-                  ),
-                  SizedBox(height: 10),
                   Expanded(
                     child: ListView.builder(
                       itemCount: surahDetail?['ayat']?.length ?? 0,
@@ -212,18 +360,24 @@ class _SubHomeScreenState extends State<SubHomeScreen> {
                         int ayahNumber = ayat['nomorAyat'];
 
                         return Card(
+                          color: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12.0),
+                          ),
+                          elevation: 3,
                           margin: EdgeInsets.symmetric(vertical: 8.0),
                           child: Padding(
                             padding: const EdgeInsets.all(12.0),
                             child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                              crossAxisAlignment: CrossAxisAlignment.end,
                               children: [
                                 Text(
-                                  '$ayahNumber. ${ayat['teksArab']}',
+                                  '${ayat['teksArab']}',
                                   textAlign: TextAlign.right,
                                   style: TextStyle(
                                     fontSize: 24,
                                     fontFamily: 'Amiri',
+                                    color: Colors.green[800],
                                   ),
                                 ),
                                 SizedBox(height: 5),
@@ -247,12 +401,26 @@ class _SubHomeScreenState extends State<SubHomeScreen> {
                                   children: [
                                     Row(
                                       children: [
-                                        IconButton(
-                                          icon: Icon(Icons.play_arrow),
-                                          onPressed: () {
-                                            playAudio(ayat['audio']['01']);
-                                          },
-                                        ),
+                                        // IconButton(
+                                        //   icon: Icon(Icons.play_arrow,
+                                        //       color: Colors.green),
+                                        //   onPressed: () {
+                                        //     String? audioUrl =
+                                        //         ayat['audio']['01'];
+                                        //     if (audioUrl != null &&
+                                        //         audioUrl.isNotEmpty) {
+                                        //       playAudio(audioUrl);
+                                        //     } else {
+                                        //       ScaffoldMessenger.of(context)
+                                        //           .showSnackBar(
+                                        //         SnackBar(
+                                        //           content: Text(
+                                        //               "Audio not available for this Ayah"),
+                                        //         ),
+                                        //       );
+                                        //     }
+                                        //   },
+                                        // ),
                                         IconButton(
                                           icon: Icon(
                                             bookmarkedAyahs.contains(ayahNumber)
@@ -260,17 +428,18 @@ class _SubHomeScreenState extends State<SubHomeScreen> {
                                                 : Icons.bookmark_border,
                                             color: bookmarkedAyahs
                                                     .contains(ayahNumber)
-                                                ? Colors.blue
+                                                ? Colors.green
                                                 : null,
                                           ),
                                           onPressed: () {
-                                            toggleBookmark(ayahNumber);
+                                            // Toggle Bookmark Function
                                           },
                                         ),
                                         IconButton(
-                                          icon: Icon(Icons.edit_note),
+                                          icon: Icon(Icons.edit_note,
+                                              color: Colors.green),
                                           onPressed: () {
-                                            addNotes(ayahNumber);
+                                            // Add Note Function
                                           },
                                         ),
                                       ],

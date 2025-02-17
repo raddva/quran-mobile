@@ -24,26 +24,26 @@ class _BottomNavbarState extends State<BottomNavbar> {
           filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
           child: Container(
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
+              color: Colors.transparent,
               borderRadius: BorderRadius.circular(30),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.white.withOpacity(0.1),
+                  color: Colors.transparent,
                   blurRadius: 10,
                   spreadRadius: 2,
                   offset: Offset(0, 4),
                 ),
               ],
-              border: Border.all(color: Colors.white.withOpacity(0.3)),
+              border: Border.all(color: Colors.transparent),
             ),
             child: Padding(
               padding:
                   const EdgeInsets.symmetric(horizontal: 15.0, vertical: 10),
               child: GNav(
                 backgroundColor: Colors.transparent,
-                color: Colors.black,
-                activeColor: Colors.black,
-                tabBackgroundColor: Colors.black.withOpacity(0.3),
+                color: Colors.green,
+                activeColor: Colors.green,
+                tabBackgroundColor: Colors.green.withOpacity(0.3),
                 gap: 10,
                 padding: EdgeInsets.all(16),
                 onTabChange: (value) {
