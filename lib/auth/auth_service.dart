@@ -88,15 +88,18 @@ class AuthService {
 
       if (user != null) {
         await user.updateProfile(displayName: name);
-
-        await user.verifyBeforeUpdateEmail(email);
-
         await user.reload();
-        final updatedUser = _auth.currentUser;
+        user = _auth.currentUser;
 
-        await _firestore.collection("users").doc(user.uid).update({
-          "display_name": updatedUser?.displayName,
-          "email": updatedUser?.email,
+        if (user?.email != email) {
+          await user?.verifyBeforeUpdateEmail(email);
+          print(
+              "Verification email sent. User must verify before email updates.");
+        }
+
+        await _firestore.collection("users").doc(user?.uid).update({
+          "display_name": user?.displayName,
+          "email": user?.email,
         });
 
         return true;
