@@ -19,7 +19,9 @@ class SubHomeScreen extends StatefulWidget {
 class _SubHomeScreenState extends State<SubHomeScreen> {
   Map<String, dynamic>? surahDetail;
   bool isLoading = true;
-  final AudioPlayer _audioPlayer = AudioPlayer();
+  AudioPlayer audioPlayer = AudioPlayer();
+  bool isPlaying = false;
+  String? currentAudioUrl;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
@@ -29,15 +31,24 @@ class _SubHomeScreenState extends State<SubHomeScreen> {
   @override
   void initState() {
     super.initState();
-    _audioPlayer.setReleaseMode(ReleaseMode.stop);
     fetchSurahDetails();
     fetchBookmarks();
     fetchNotes();
   }
 
+  Future<void> playAudio(String url) async {
+    try {
+      await audioPlayer.stop();
+      await audioPlayer.setSourceUrl(url);
+      await audioPlayer.resume();
+    } catch (e) {
+      print("Audio error: $e");
+    }
+  }
+
   @override
   void dispose() {
-    _audioPlayer.dispose();
+    audioPlayer.dispose();
     super.dispose();
   }
 
@@ -53,19 +64,6 @@ class _SubHomeScreenState extends State<SubHomeScreen> {
       });
     } else {
       throw Exception('Failed to load Surah details');
-    }
-  }
-
-  void playAudio(String url) async {
-    try {
-      await _audioPlayer.stop();
-      await _audioPlayer.setSourceUrl(url);
-      await _audioPlayer.resume();
-    } catch (e) {
-      print("Error playing audio: $e");
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error playing audio")),
-      );
     }
   }
 
@@ -247,6 +245,18 @@ class _SubHomeScreenState extends State<SubHomeScreen> {
     );
   }
 
+  int currentAyahNumber = 1;
+
+  List<dynamic> getCurrentAyahs() {
+    if (surahDetail == null || surahDetail!['ayat'] == null) return [];
+
+    return surahDetail!['ayat']
+        .where((ayat) =>
+            ayat['nomorAyat'] >= currentAyahNumber &&
+            ayat['nomorAyat'] < currentAyahNumber + 5)
+        .toList();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -263,9 +273,7 @@ class _SubHomeScreenState extends State<SubHomeScreen> {
         centerTitle: true,
         leading: IconButton(
           icon: Icon(CupertinoIcons.chevron_back),
-          onPressed: () {
-            Navigator.pop(context);
-          },
+          onPressed: () => Navigator.pop(context),
         ),
         actions: [
           IconButton(
@@ -335,7 +343,7 @@ class _SubHomeScreenState extends State<SubHomeScreen> {
         ],
       ),
       body: isLoading
-          ? Center(child: CircularProgressIndicator(color: Colors.green))
+          ? Center(child: LinearProgressIndicator(color: Colors.green))
           : Padding(
               padding: const EdgeInsets.all(16.0),
               child: Column(
@@ -354,9 +362,13 @@ class _SubHomeScreenState extends State<SubHomeScreen> {
                   ),
                   Expanded(
                     child: ListView.builder(
-                      itemCount: surahDetail?['ayat']?.length ?? 0,
+                      // itemCount: surahDetail?['ayat']?.length ?? 0,
+                      // itemBuilder: (context, index) {
+                      //   var ayat = surahDetail?['ayat'][index];
+                      //   int ayahNumber = ayat['nomorAyat'];
+                      itemCount: getCurrentAyahs().length,
                       itemBuilder: (context, index) {
-                        var ayat = surahDetail?['ayat'][index];
+                        var ayat = getCurrentAyahs()[index];
                         int ayahNumber = ayat['nomorAyat'];
 
                         return Card(
@@ -402,8 +414,14 @@ class _SubHomeScreenState extends State<SubHomeScreen> {
                                     Row(
                                       children: [
                                         // IconButton(
-                                        //   icon: Icon(Icons.play_arrow,
-                                        //       color: Colors.green),
+                                        //   icon: Icon(
+                                        //     (isPlaying &&
+                                        //             currentAudioUrl == audioUrl)
+                                        //         ? Icons.pause_circle_filled
+                                        //         : Icons.play_circle_fill,
+                                        //     color: Colors.green,
+                                        //     size: 32,
+                                        //   ),
                                         //   onPressed: () {
                                         //     String? audioUrl =
                                         //         ayat['audio']['01'];
@@ -414,9 +432,8 @@ class _SubHomeScreenState extends State<SubHomeScreen> {
                                         //       ScaffoldMessenger.of(context)
                                         //           .showSnackBar(
                                         //         SnackBar(
-                                        //           content: Text(
-                                        //               "Audio not available for this Ayah"),
-                                        //         ),
+                                        //             content: Text(
+                                        //                 "Audio unavailable")),
                                         //       );
                                         //     }
                                         //   },
@@ -432,14 +449,14 @@ class _SubHomeScreenState extends State<SubHomeScreen> {
                                                 : null,
                                           ),
                                           onPressed: () {
-                                            // Toggle Bookmark Function
+                                            toggleBookmark(ayahNumber);
                                           },
                                         ),
                                         IconButton(
                                           icon: Icon(Icons.edit_note,
                                               color: Colors.green),
                                           onPressed: () {
-                                            // Add Note Function
+                                            addNotes(ayahNumber);
                                           },
                                         ),
                                       ],
@@ -452,6 +469,48 @@ class _SubHomeScreenState extends State<SubHomeScreen> {
                         );
                       },
                     ),
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      if (currentAyahNumber > 1)
+                        IconButton(
+                          icon: Row(
+                            children: [
+                              Icon(Icons.chevron_left, color: Colors.green),
+                              Text("Ayah ${currentAyahNumber - 5}",
+                                  style: TextStyle(color: Colors.green)),
+                            ],
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              currentAyahNumber = ((currentAyahNumber - 5)
+                                      .clamp(
+                                          1, surahDetail?['jumlahAyat'] ?? 1))
+                                  as int;
+                            });
+                          },
+                        ),
+                      if (currentAyahNumber + 5 <=
+                          (surahDetail?['jumlahAyat'] ?? 0))
+                        IconButton(
+                          icon: Row(
+                            children: [
+                              Text("Ayah ${currentAyahNumber + 5}",
+                                  style: TextStyle(color: Colors.green)),
+                              Icon(Icons.chevron_right, color: Colors.green),
+                            ],
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              currentAyahNumber = ((currentAyahNumber + 5)
+                                      .clamp(
+                                          1, surahDetail?['jumlahAyat'] ?? 1))
+                                  as int;
+                            });
+                          },
+                        ),
+                    ],
                   ),
                 ],
               ),
