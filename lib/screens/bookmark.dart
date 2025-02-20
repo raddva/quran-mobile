@@ -175,8 +175,10 @@ class _BookmarkScreenState extends State<BookmarkScreen>
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) =>
-                                        SubHomeScreen(surahNumber: surahNumber),
+                                    builder: (context) => SubHomeScreen(
+                                      surahNumber: surahNumber,
+                                      ayahNumber: ayahNumber,
+                                    ),
                                   ),
                                 );
                               },
@@ -213,8 +215,10 @@ class _BookmarkScreenState extends State<BookmarkScreen>
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) =>
-                                        SubHomeScreen(surahNumber: surahNumber),
+                                    builder: (context) => SubHomeScreen(
+                                      surahNumber: surahNumber,
+                                      ayahNumber: ayahNumber,
+                                    ),
                                   ),
                                 );
                               },

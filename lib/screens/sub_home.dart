@@ -9,8 +9,9 @@ import 'package:audioplayers/audioplayers.dart';
 
 class SubHomeScreen extends StatefulWidget {
   final int surahNumber;
+  final int? ayahNumber;
 
-  const SubHomeScreen({super.key, required this.surahNumber});
+  const SubHomeScreen({super.key, required this.surahNumber, this.ayahNumber});
 
   @override
   State<SubHomeScreen> createState() => _SubHomeScreenState();
@@ -19,6 +20,9 @@ class SubHomeScreen extends StatefulWidget {
 class _SubHomeScreenState extends State<SubHomeScreen> {
   Map<String, dynamic>? surahDetail;
   bool isLoading = true;
+
+  ScrollController _scrollController = ScrollController();
+
   AudioPlayer audioPlayer = AudioPlayer();
   bool isPlaying = false;
   String? currentAudioUrl;
@@ -34,6 +38,41 @@ class _SubHomeScreenState extends State<SubHomeScreen> {
     fetchSurahDetails();
     fetchBookmarks();
     fetchNotes();
+
+    if (widget.ayahNumber != null) {
+      Future.delayed(Duration(milliseconds: 500), () {
+        navigateToAyah(widget.ayahNumber!);
+      });
+    }
+  }
+
+  void navigateToAyah(int ayahNumber) {
+    int pageSize = 5;
+    int targetPage = ((ayahNumber - 1) / pageSize).floor() * pageSize + 1;
+
+    setState(() {
+      currentAyahNumber = targetPage;
+    });
+
+    Future.delayed(Duration(milliseconds: 500), () {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        scrollToAyah(ayahNumber);
+      });
+    });
+  }
+
+  void scrollToAyah(int ayahNumber) {
+    if (surahDetail == null || surahDetail!['ayat'] == null) return;
+
+    int index =
+        getCurrentAyahs().indexWhere((ayat) => ayat['nomorAyat'] == ayahNumber);
+    if (index != -1) {
+      _scrollController.animateTo(
+        index * 500.0,
+        duration: Duration(milliseconds: 500),
+        curve: Curves.easeInOut,
+      );
+    }
   }
 
   Future<void> playAudio(String url) async {
@@ -362,6 +401,7 @@ class _SubHomeScreenState extends State<SubHomeScreen> {
                   ),
                   Expanded(
                     child: ListView.builder(
+                      controller: _scrollController,
                       // itemCount: surahDetail?['ayat']?.length ?? 0,
                       // itemBuilder: (context, index) {
                       //   var ayat = surahDetail?['ayat'][index];
