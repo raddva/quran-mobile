@@ -17,23 +17,37 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.green[50],
+      backgroundColor: Colors.white,
       appBar: AppBar(
         leading: IconButton(
-          icon: Icon(CupertinoIcons.back),
+          icon: Icon(
+            CupertinoIcons.back,
+            color: Colors.green,
+          ),
           onPressed: () {
             Navigator.pop(context);
           },
         ),
-        backgroundColor: Colors.green[50],
-        title: const Text('Reset Password'),
+        backgroundColor: Colors.transparent,
+        title: const Text(
+          'Reset Password',
+          style: TextStyle(
+            color: Colors.green,
+          ),
+        ),
       ),
       body: Padding(
         padding: EdgeInsets.symmetric(horizontal: 25),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text("Enter email to send you a password reset email"),
+            Text(
+              "Enter email to send you a link to reset your password",
+              style: TextStyle(
+                color: Colors.green,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
             SizedBox(height: 20),
             CustomTextField(
               controller: _email,

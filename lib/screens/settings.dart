@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:quran_mobile/auth/auth_service.dart';
 import 'package:quran_mobile/auth/forgot_password_screen.dart';
 import 'package:quran_mobile/auth/signin_screen.dart';
@@ -104,7 +105,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   label: "Sign Out",
                   onPressed: () async {
                     await auth.signOut();
-                    goToLogin(context);
+                    // goToLogin(context);
+                    Get.offNamed('/auth');
                   },
                 )
               ],

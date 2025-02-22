@@ -13,8 +13,8 @@ class CustomButton extends StatelessWidget {
         padding: const EdgeInsets.all(15),
         margin: const EdgeInsets.symmetric(horizontal: 25),
         decoration: BoxDecoration(
-          color: Colors.green[400],
-          borderRadius: BorderRadius.circular(8),
+          color: Colors.green[500],
+          borderRadius: BorderRadius.circular(14),
         ),
         child: Center(
           child: Text(

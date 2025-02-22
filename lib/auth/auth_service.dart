@@ -26,17 +26,40 @@ class AuthService {
     try {
       final googleUser = await GoogleSignIn().signIn();
 
-      final googleAuth = await googleUser?.authentication;
+      if (googleUser == null) {
+        print("Google Sign-In canceled by user.");
+        return null;
+      }
+
+      final googleAuth = await googleUser.authentication;
 
       final cred = GoogleAuthProvider.credential(
-          idToken: googleAuth?.idToken, accessToken: googleAuth?.accessToken);
+        idToken: googleAuth.idToken,
+        accessToken: googleAuth.accessToken,
+      );
 
-      return await _auth.signInWithCredential(cred);
+      final userCredential = await _auth.signInWithCredential(cred);
+      final user = userCredential.user;
+
+      if (user != null) {
+        final userDoc =
+            await _firestore.collection("users").doc(user.uid).get();
+
+        if (!userDoc.exists) {
+          await _firestore.collection("users").doc(user.uid).set({
+            "uid": user.uid,
+            "display_name": user.displayName ?? "Unknown",
+            "email": user.email,
+            "created_at": FieldValue.serverTimestamp(),
+          }, SetOptions(merge: true));
+        }
+      }
+
+      return userCredential;
     } catch (e) {
-      print(e.toString());
+      print("Google Sign-In Error: ${e.toString()}");
+      return null;
     }
-
-    return null;
   }
 
   Future<User?> createUserWithEmail(
@@ -75,11 +98,13 @@ class AuthService {
       final cred = await _auth.signInWithEmailAndPassword(
           email: email, password: password);
       return cred.user;
+    } on FirebaseAuthException catch (e) {
+      print(e.code);
+      print(e.message);
+      throw _getFirebaseAuthErrorMessage(e.code);
     } catch (e) {
-      print("error");
+      throw "An unexpected error occurred. Please try again.";
     }
-
-    return null;
   }
 
   Future<bool> updateUserInfo(String name, String email) async {
@@ -115,6 +140,19 @@ class AuthService {
       await _auth.signOut();
     } catch (e) {
       print("error");
+    }
+  }
+
+  String _getFirebaseAuthErrorMessage(String? errorCode) {
+    switch (errorCode) {
+      case "invalid-credential":
+        return "Invalid Email or Password";
+      case "user-disabled":
+        return "This account has been disabled. Please contact support.";
+      case "too-many-requests":
+        return "Too many failed attempts. Try again later.";
+      default:
+        return "An unknown error occurred. Please try again.";
     }
   }
 }

@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:quran_mobile/auth/auth_service.dart';
 import 'package:quran_mobile/auth/signin_screen.dart';
@@ -7,6 +8,7 @@ import 'package:quran_mobile/utils/image_strings.dart';
 import 'package:quran_mobile/widgets/button.dart';
 import 'package:quran_mobile/widgets/textfield.dart';
 import 'package:flutter/material.dart';
+import 'package:quran_mobile/widgets/wrapper.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -33,7 +35,7 @@ class _SignupScreenState extends State<SignupScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.green[50],
+      backgroundColor: Colors.white,
       body: SafeArea(
         child: Center(
           child: Column(
@@ -50,6 +52,7 @@ class _SignupScreenState extends State<SignupScreen> {
                 style: TextStyle(
                   color: Colors.green[700],
                   fontSize: 16,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
               SizedBox(height: 15),
@@ -115,7 +118,17 @@ class _SignupScreenState extends State<SignupScreen> {
       );
 
   _signup() async {
-    await _auth.createUserWithEmail(_name.text, _email.text, _password.text);
-    Navigator.pop(context);
+    User? user = await _auth.createUserWithEmail(
+        _name.text, _email.text, _password.text);
+
+    if (user != null) {
+      await _auth.sendEmailVerifLink();
+
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text("Verification email sent. Please verify to log in.")));
+
+      Navigator.pushReplacement(
+          context, MaterialPageRoute(builder: (context) => Wrapper()));
+    }
   }
 }

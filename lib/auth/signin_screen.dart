@@ -19,156 +19,198 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final _auth = AuthService();
+  final _formKey = GlobalKey<FormState>();
 
   final _email = TextEditingController();
   final _password = TextEditingController();
 
+  bool _isLoading = false;
+
   @override
   void dispose() {
-    super.dispose();
     _email.dispose();
     _password.dispose();
+    super.dispose();
+  }
+
+  void _showAlert(String title, String message) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(title),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("OK"),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _login() async {
+    if (!_formKey.currentState!.validate()) return;
+    setState(() => _isLoading = true);
+
+    try {
+      final user = await _auth.loginWithEmail(_email.text, _password.text);
+
+      setState(() => _isLoading = false);
+
+      if (user != null) {
+        Get.offNamed('/home');
+      }
+    } catch (errorMessage) {
+      setState(() => _isLoading = false);
+      _showAlert("Login Failed", errorMessage.toString());
+    }
+  }
+
+  void _goToSignup() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const SignupScreen()),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.green[50],
+      backgroundColor: Colors.white,
       body: SafeArea(
         child: Center(
-          child: Column(
-            children: [
-              SizedBox(height: 20),
-              Image(
-                image: AssetImage(TImages.signInImage),
-                width: THelperFunctions.screenWidth() * 0.5,
-                height: THelperFunctions.screenHeight() * 0.4,
-              ),
-              SizedBox(height: 10),
-              Text(
-                "Welcome back! You've been missed!",
-                style: TextStyle(
-                  color: Colors.green[700],
-                  fontSize: 16,
-                ),
-              ),
-              SizedBox(height: 15),
-              CustomTextField(
-                hint: "Enter Email",
-                label: "Email",
-                controller: _email,
-                icon: CupertinoIcons.mail,
-              ),
-              SizedBox(height: 10),
-              CustomTextField(
-                hint: "Enter Password",
-                label: "Password",
-                controller: _password,
-                isPassword: true,
-                icon: CupertinoIcons.lock,
-              ),
-              SizedBox(height: 10),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 25.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    InkWell(
-                      onTap: () {
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => ForgotPasswordScreen(),
-                            ));
-                      },
-                      child: Text(
-                        "Forgot Password?",
-                        style: TextStyle(
-                          color: Colors.green[600],
+          child: SingleChildScrollView(
+            // padding: const EdgeInsets.symmetric(horizontal: 10.0),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                children: [
+                  Image.asset(
+                    TImages.signInImage,
+                    width: THelperFunctions.screenWidth() * 0.5,
+                    height: THelperFunctions.screenHeight() * 0.4,
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    "Welcome back! You've been missed!",
+                    style: TextStyle(
+                      color: Colors.green[700],
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 15),
+                  CustomTextField(
+                    hint: "Enter Email",
+                    label: "Email",
+                    controller: _email,
+                    icon: CupertinoIcons.mail,
+                  ),
+                  const SizedBox(height: 10),
+                  CustomTextField(
+                    hint: "Enter Password",
+                    label: "Password",
+                    controller: _password,
+                    isPassword: true,
+                    icon: CupertinoIcons.lock,
+                  ),
+                  const SizedBox(height: 10),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 25.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        InkWell(
+                          onTap: () {
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => ForgotPasswordScreen(),
+                                ));
+                          },
+                          child: Text(
+                            "Forgot Password?",
+                            style: TextStyle(
+                              color: Colors.blue,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 15),
+                  _isLoading
+                      ? const CircularProgressIndicator()
+                      : CustomButton(
+                          label: "Sign In",
+                          onPressed: _login,
+                        ),
+                  const SizedBox(height: 20),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 25.0),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Divider(
+                            thickness: 0.5,
+                            color: Colors.green[400],
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                          child: Text(
+                            'Or continue with',
+                            style: TextStyle(color: Colors.green[700]),
+                          ),
+                        ),
+                        Expanded(
+                          child: Divider(
+                            thickness: 0.5,
+                            color: Colors.green[400],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  SizedBox(height: 20),
+                  InkWell(
+                    onTap: () async {
+                      try {
+                        final user = await _auth.loginWithGoogle();
+                        if (user != null) {
+                          Get.offNamed('/home');
+                        }
+                      } catch (e) {
+                        _showAlert("Google Sign-In Failed", e.toString());
+                      }
+                    },
+                    child: SquareTile(imgPath: 'assets/Images/google-logo.png'),
+                  ),
+                  const SizedBox(height: 20),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Text("Doesn't have an account?"),
+                      const SizedBox(width: 4),
+                      InkWell(
+                        onTap: _goToSignup,
+                        child: const Text(
+                          'Sign Up',
+                          style: TextStyle(
+                            color: Colors.blue,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
-                    ),
-                  ],
-                ),
-              ),
-              SizedBox(height: 15),
-              CustomButton(
-                label: "Sign In",
-                onPressed: _login,
-              ),
-              SizedBox(height: 20),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 25.0),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Divider(
-                        thickness: 0.5,
-                        color: Colors.green[400],
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 10.0),
-                      child: Text(
-                        'Or continue with',
-                        style: TextStyle(color: Colors.green[700]),
-                      ),
-                    ),
-                    Expanded(
-                      child: Divider(
-                        thickness: 0.5,
-                        color: Colors.green[400],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              SizedBox(height: 20),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  SquareTile(imgPath: 'assets/Images/google-logo.png'),
-                ],
-              ),
-              SizedBox(height: 20),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text("Doesn't have any account?"),
-                  SizedBox(width: 4),
-                  InkWell(
-                    onTap: () => goToSignup(context),
-                    child: Text(
-                      'Sign Up',
-                      style: TextStyle(
-                        color: Colors.blue,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+                    ],
                   ),
                 ],
               ),
-            ],
+            ),
           ),
         ),
       ),
     );
-  }
-
-  goToSignup(BuildContext context) => Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => const SignupScreen()),
-      );
-
-  goToHome(BuildContext context) {
-    Get.offNamed('/home');
-  }
-
-  _login() async {
-    final user = await _auth.loginWithEmail(_email.text, _password.text);
-
-    if (user != null) {
-      goToHome(context);
-    }
   }
 }

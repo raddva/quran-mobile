@@ -33,7 +33,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.green[50],
+      backgroundColor: Colors.white,
       body: Align(
         alignment: Alignment.center,
         child: Padding(
@@ -42,8 +42,12 @@ class _VerificationScreenState extends State<VerificationScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               const Text(
-                "We have sent an email for verification. Please check your inbox.",
+                "We've sent an email for verification. Please check your inbox.",
                 textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Colors.green,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
               const SizedBox(height: 20),
               CustomButton(

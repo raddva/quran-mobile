@@ -25,7 +25,7 @@ class CustomTextField extends StatefulWidget {
 
 class _CustomTextFieldState extends State<CustomTextField> {
   bool _isObscure = true;
-  bool _isEnabled = true;
+  final bool _isEnabled = true;
 
   @override
   Widget build(BuildContext context) {
@@ -37,21 +37,32 @@ class _CustomTextFieldState extends State<CustomTextField> {
         controller: widget.controller,
         decoration: InputDecoration(
           hintText: widget.hint,
-          enabledBorder: const OutlineInputBorder(
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8.0),
             borderSide: BorderSide(color: Colors.green),
           ),
           focusedBorder: OutlineInputBorder(
-            borderSide: BorderSide(color: Colors.green.shade400),
+            borderRadius: BorderRadius.circular(8.0),
+            borderSide: BorderSide(color: Colors.green),
           ),
-          fillColor: Colors.green[50],
+          fillColor: Colors.white,
           filled: true,
-          label: Text(widget.label),
-          prefixIcon: widget.icon != null ? Icon(widget.icon) : null,
+          label: Text(
+            widget.label,
+            style: TextStyle(color: Colors.green),
+          ),
+          prefixIcon: widget.icon != null
+              ? Icon(
+                  widget.icon,
+                  color: Colors.green,
+                )
+              : null,
           suffixIcon: widget.isPassword
               ? IconButton(
-                  icon: Icon(_isObscure
-                      ? CupertinoIcons.eye
-                      : CupertinoIcons.eye_slash),
+                  icon: Icon(
+                    _isObscure ? CupertinoIcons.eye : CupertinoIcons.eye_slash,
+                    color: Colors.green,
+                  ),
                   onPressed: () {
                     setState(() {
                       _isObscure = !_isObscure;
