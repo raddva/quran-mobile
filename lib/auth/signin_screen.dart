@@ -76,140 +76,180 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isLargeScreen = MediaQuery.of(context).size.width > 900;
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
         child: Center(
-          child: SingleChildScrollView(
-            // padding: const EdgeInsets.symmetric(horizontal: 10.0),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                children: [
-                  Image.asset(
-                    TImages.signInImage,
-                    width: THelperFunctions.screenWidth() * 0.5,
-                    height: THelperFunctions.screenHeight() * 0.4,
+          child: isLargeScreen
+              ? Card(
+                  margin: EdgeInsets.all(40),
+                  elevation: 10,
+                  color: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
                   ),
-                  const SizedBox(height: 10),
-                  Text(
-                    "Welcome back! You've been missed!",
-                    style: TextStyle(
-                      color: Colors.green[700],
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  const SizedBox(height: 15),
-                  CustomTextField(
-                    hint: "Enter Email",
-                    label: "Email",
-                    controller: _email,
-                    icon: CupertinoIcons.mail,
-                  ),
-                  const SizedBox(height: 10),
-                  CustomTextField(
-                    hint: "Enter Password",
-                    label: "Password",
-                    controller: _password,
-                    isPassword: true,
-                    icon: CupertinoIcons.lock,
-                  ),
-                  const SizedBox(height: 10),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 25.0),
+                  child: Padding(
+                    padding: EdgeInsets.all(20),
                     child: Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
                       children: [
-                        InkWell(
-                          onTap: () {
-                            Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => ForgotPasswordScreen(),
-                                ));
-                          },
-                          child: Text(
-                            "Forgot Password?",
-                            style: TextStyle(
-                              color: Colors.blue,
-                            ),
+                        Expanded(
+                          child: Image.asset(
+                            TImages.signInImage,
+                            fit: BoxFit.fill,
+                          ),
+                        ),
+                        VerticalDivider(thickness: 1, color: Colors.green[700]),
+                        Expanded(
+                          child: SingleChildScrollView(
+                            padding: EdgeInsets.all(20),
+                            child: _buildLoginForm(),
                           ),
                         ),
                       ],
                     ),
                   ),
-                  const SizedBox(height: 15),
-                  _isLoading
-                      ? const CircularProgressIndicator()
-                      : CustomButton(
-                          label: "Sign In",
-                          onPressed: _login,
-                        ),
-                  const SizedBox(height: 20),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 25.0),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Divider(
-                            thickness: 0.5,
-                            color: Colors.green[400],
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 10.0),
-                          child: Text(
-                            'Or continue with',
-                            style: TextStyle(color: Colors.green[700]),
-                          ),
-                        ),
-                        Expanded(
-                          child: Divider(
-                            thickness: 0.5,
-                            color: Colors.green[400],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  SizedBox(height: 20),
-                  InkWell(
-                    onTap: () async {
-                      try {
-                        final user = await _auth.loginWithGoogle();
-                        if (user != null) {
-                          Get.offNamed('/home');
-                        }
-                      } catch (e) {
-                        _showAlert("Google Sign-In Failed", e.toString());
-                      }
-                    },
-                    child: SquareTile(imgPath: 'assets/Images/google-logo.png'),
-                  ),
-                  const SizedBox(height: 20),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
+                )
+              : SingleChildScrollView(
+                  padding: EdgeInsets.all(20),
+                  child: Column(
                     children: [
-                      const Text("Doesn't have an account?"),
-                      const SizedBox(width: 4),
-                      InkWell(
-                        onTap: _goToSignup,
-                        child: const Text(
-                          'Sign Up',
-                          style: TextStyle(
-                            color: Colors.blue,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
+                      Image.asset(
+                        TImages.signInImage,
+                        width: THelperFunctions.screenWidth() * 0.5,
+                        height: THelperFunctions.screenHeight() * 0.4,
                       ),
+                      _buildLoginForm(),
                     ],
                   ),
-                ],
-              ),
+                ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLoginForm() {
+    return Form(
+      key: _formKey,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          const SizedBox(height: 10),
+          Text(
+            "Welcome back! You've been missed!",
+            style: TextStyle(
+              color: Colors.green[700],
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
             ),
           ),
-        ),
+          const SizedBox(height: 15),
+          CustomTextField(
+            hint: "Enter Email",
+            label: "Email",
+            controller: _email,
+            icon: CupertinoIcons.mail,
+          ),
+          const SizedBox(height: 10),
+          CustomTextField(
+            hint: "Enter Password",
+            label: "Password",
+            controller: _password,
+            isPassword: true,
+            icon: CupertinoIcons.lock,
+          ),
+          const SizedBox(height: 10),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 25.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                InkWell(
+                  onTap: () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ForgotPasswordScreen(),
+                        ));
+                  },
+                  child: Text(
+                    "Forgot Password?",
+                    style: TextStyle(
+                      color: Colors.blue,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 15),
+          _isLoading
+              ? const CircularProgressIndicator()
+              : CustomButton(
+                  label: "Sign In",
+                  onPressed: _login,
+                ),
+          const SizedBox(height: 20),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 25.0),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Divider(
+                    thickness: 0.5,
+                    color: Colors.green[400],
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                  child: Text(
+                    'Or continue with',
+                    style: TextStyle(color: Colors.green[700]),
+                  ),
+                ),
+                Expanded(
+                  child: Divider(
+                    thickness: 0.5,
+                    color: Colors.green[400],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          SizedBox(height: 20),
+          InkWell(
+            onTap: () async {
+              try {
+                final user = await _auth.loginWithGoogle();
+                if (user != null) {
+                  Get.offNamed('/home');
+                }
+              } catch (e) {
+                _showAlert("Google Sign-In Failed", e.toString());
+              }
+            },
+            child: SquareTile(imgPath: 'assets/Images/google-logo.png'),
+          ),
+          const SizedBox(height: 20),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Text("Doesn't have an account?"),
+              const SizedBox(width: 4),
+              InkWell(
+                onTap: _goToSignup,
+                child: const Text(
+                  'Sign Up',
+                  style: TextStyle(
+                    color: Colors.blue,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
