@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:email_validator/email_validator.dart';
 
 class CustomTextField extends StatefulWidget {
   const CustomTextField({
@@ -10,6 +11,7 @@ class CustomTextField extends StatefulWidget {
     this.isPassword = false,
     this.isDisabled = false,
     this.icon,
+    this.validator,
   });
 
   final String hint;
@@ -18,6 +20,7 @@ class CustomTextField extends StatefulWidget {
   final bool isDisabled;
   final TextEditingController? controller;
   final IconData? icon;
+  final String? Function(String?)? validator;
 
   @override
   State<CustomTextField> createState() => _CustomTextFieldState();
@@ -31,10 +34,11 @@ class _CustomTextFieldState extends State<CustomTextField> {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 25.0),
-      child: TextField(
+      child: TextFormField(
         readOnly: widget.isDisabled ? _isEnabled : false,
         obscureText: widget.isPassword ? _isObscure : false,
         controller: widget.controller,
+        validator: widget.validator ?? _defaultValidator,
         decoration: InputDecoration(
           hintText: widget.hint,
           enabledBorder: OutlineInputBorder(
@@ -44,6 +48,14 @@ class _CustomTextFieldState extends State<CustomTextField> {
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8.0),
             borderSide: BorderSide(color: Colors.green),
+          ),
+          errorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8.0),
+            borderSide: BorderSide(color: Colors.red),
+          ),
+          focusedErrorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8.0),
+            borderSide: BorderSide(color: Colors.red),
           ),
           fillColor: Colors.white,
           filled: true,
@@ -73,5 +85,18 @@ class _CustomTextFieldState extends State<CustomTextField> {
         ),
       ),
     );
+  }
+
+  String? _defaultValidator(String? value) {
+    if (value == null || value.isEmpty) {
+      return "This field cannot be empty";
+    }
+    if (widget.label == "Email" && !EmailValidator.validate(value)) {
+      return "Enter a valid email";
+    }
+    if (widget.isPassword && value.length < 6) {
+      return "Password must be at least 6 characters";
+    }
+    return null;
   }
 }

@@ -10,5 +10,5 @@ class TImages {
   static const String obImage3 = "assets/Images/3.png";
 
   static const String signInImage = "assets/Images/2.png";
-  static const String signUpImage = "assets/Images/10.png";
+  static const String signUpImage = "assets/Images/11.png";
 }

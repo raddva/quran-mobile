@@ -9,6 +9,8 @@ import 'package:quran_mobile/widgets/square_tile.dart';
 import 'package:quran_mobile/widgets/textfield.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:quran_mobile/widgets/alert_dialog.dart';
+import 'package:email_validator/email_validator.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -33,37 +35,26 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-  void _showAlert(String title, String message) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(title),
-        content: Text(message),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("OK"),
-          ),
-        ],
-      ),
-    );
-  }
-
   Future<void> _login() async {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _isLoading = true);
 
     try {
-      final user = await _auth.loginWithEmail(_email.text, _password.text);
+      AuthResult result =
+          await _auth.loginWithEmail(_email.text, _password.text);
 
       setState(() => _isLoading = false);
 
-      if (user != null) {
+      if (result.user != null) {
         Get.offNamed('/home');
+      } else {
+        showCustomAlertDialog(context, "Login Failed",
+            result.errors?.join("\n") ?? "Unknown error");
       }
-    } catch (errorMessage) {
+    } catch (e) {
       setState(() => _isLoading = false);
-      _showAlert("Login Failed", errorMessage.toString());
+      showCustomAlertDialog(
+          context, "Login Failed", "An unexpected error occurred.");
     }
   }
 
@@ -135,7 +126,7 @@ class _LoginScreenState extends State<LoginScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          const SizedBox(height: 10),
+          // const SizedBox(height: 10),
           Text(
             "Welcome back! You've been missed!",
             style: TextStyle(
@@ -150,6 +141,15 @@ class _LoginScreenState extends State<LoginScreen> {
             label: "Email",
             controller: _email,
             icon: CupertinoIcons.mail,
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return "Email cannot be empty";
+              }
+              if (!EmailValidator.validate(value)) {
+                return "Enter a valid email";
+              }
+              return null;
+            },
           ),
           const SizedBox(height: 10),
           CustomTextField(
@@ -158,6 +158,15 @@ class _LoginScreenState extends State<LoginScreen> {
             controller: _password,
             isPassword: true,
             icon: CupertinoIcons.lock,
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return "Password cannot be empty";
+              }
+              if (value.length < 6) {
+                return "Password must be at least 6 characters long";
+              }
+              return null;
+            },
           ),
           const SizedBox(height: 10),
           Padding(
@@ -226,7 +235,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   Get.offNamed('/home');
                 }
               } catch (e) {
-                _showAlert("Google Sign-In Failed", e.toString());
+                showCustomAlertDialog(
+                    context, "Google Sign-In Failed", e.toString());
               }
             },
             child: SquareTile(imgPath: 'assets/Images/google-logo.png'),

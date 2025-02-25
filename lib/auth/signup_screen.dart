@@ -1,14 +1,14 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:quran_mobile/auth/auth_service.dart';
 import 'package:quran_mobile/auth/signin_screen.dart';
-import 'package:quran_mobile/screens/home.dart';
 import 'package:quran_mobile/utils/helpers.dart';
 import 'package:quran_mobile/utils/image_strings.dart';
 import 'package:quran_mobile/widgets/button.dart';
 import 'package:quran_mobile/widgets/textfield.dart';
 import 'package:flutter/material.dart';
 import 'package:quran_mobile/widgets/wrapper.dart';
+import 'package:email_validator/email_validator.dart';
+import 'package:quran_mobile/widgets/alert_dialog.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -24,12 +24,50 @@ class _SignupScreenState extends State<SignupScreen> {
   final _email = TextEditingController();
   final _password = TextEditingController();
 
+  bool _isLoading = false;
+
   @override
   void dispose() {
     _name.dispose();
     _email.dispose();
     _password.dispose();
     super.dispose();
+  }
+
+  Future<void> _signup() async {
+    if (!_formKey.currentState!.validate()) return;
+    setState(() => _isLoading = true);
+
+    try {
+      AuthResult result = await _auth.createUserWithEmail(
+          _name.text, _email.text, _password.text);
+
+      setState(() => _isLoading = false);
+
+      if (result.user != null) {
+        await _auth.sendEmailVerifLink();
+
+        showCustomAlertDialog(context, "Success",
+            "Verification email sent. Please verify to log in.");
+
+        Navigator.pushReplacement(
+            context, MaterialPageRoute(builder: (context) => Wrapper()));
+      } else {
+        showCustomAlertDialog(context, "Signup Failed",
+            result.errors?.join("\n") ?? "Unknown error");
+      }
+    } catch (e) {
+      setState(() => _isLoading = false);
+      showCustomAlertDialog(
+          context, "Signup Failed", "An unexpected error occurred.");
+    }
+  }
+
+  void _goToLogin() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const LoginScreen()),
+    );
   }
 
   @override
@@ -93,7 +131,6 @@ class _SignupScreenState extends State<SignupScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          SizedBox(height: 10),
           Text(
             "Hello, Please Register to Continue.",
             style: TextStyle(
@@ -108,6 +145,12 @@ class _SignupScreenState extends State<SignupScreen> {
             label: "Name",
             controller: _name,
             icon: CupertinoIcons.person,
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return "Name cannot be empty";
+              }
+              return null;
+            },
           ),
           SizedBox(height: 10),
           CustomTextField(
@@ -115,6 +158,14 @@ class _SignupScreenState extends State<SignupScreen> {
             label: "Email",
             controller: _email,
             icon: CupertinoIcons.mail,
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return "Email cannot be empty";
+              } else if (!EmailValidator.validate(value)) {
+                return "Enter a valid email";
+              }
+              return null;
+            },
           ),
           SizedBox(height: 10),
           CustomTextField(
@@ -123,12 +174,22 @@ class _SignupScreenState extends State<SignupScreen> {
             controller: _password,
             isPassword: true,
             icon: CupertinoIcons.lock,
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return "Password cannot be empty";
+              } else if (value.length < 6) {
+                return "Password must be at least 6 characters long";
+              }
+              return null;
+            },
           ),
           SizedBox(height: 15),
-          CustomButton(
-            label: "Sign Up",
-            onPressed: _signup,
-          ),
+          _isLoading
+              ? const CircularProgressIndicator()
+              : CustomButton(
+                  label: "Sign Up",
+                  onPressed: _signup,
+                ),
           SizedBox(height: 20),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -136,7 +197,7 @@ class _SignupScreenState extends State<SignupScreen> {
               Text("Already have an account?"),
               SizedBox(width: 4),
               InkWell(
-                onTap: () => goToLogin(context),
+                onTap: () => _goToLogin,
                 child: Text(
                   'Sign In',
                   style: TextStyle(
@@ -150,30 +211,5 @@ class _SignupScreenState extends State<SignupScreen> {
         ],
       ),
     );
-  }
-
-  goToLogin(BuildContext context) => Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => const LoginScreen()),
-      );
-
-  goToHome(BuildContext context) => Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => const HomeScreen()),
-      );
-
-  _signup() async {
-    User? user = await _auth.createUserWithEmail(
-        _name.text, _email.text, _password.text);
-
-    if (user != null) {
-      await _auth.sendEmailVerifLink();
-
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text("Verification email sent. Please verify to log in.")));
-
-      Navigator.pushReplacement(
-          context, MaterialPageRoute(builder: (context) => Wrapper()));
-    }
   }
 }

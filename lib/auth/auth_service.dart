@@ -62,7 +62,7 @@ class AuthService {
     }
   }
 
-  Future<User?> createUserWithEmail(
+  Future<AuthResult> createUserWithEmail(
       String name, String email, String password) async {
     try {
       final cred = await _auth.createUserWithEmailAndPassword(
@@ -82,28 +82,36 @@ class AuthService {
         });
       }
 
-      return user;
+      return AuthResult(user: user);
     } on FirebaseAuthException catch (e) {
-      print('Error code: ${e.code}');
-      print('Error message: ${e.message}');
+      if (e.code == "password-does-not-meet-requirements") {
+        final RegExp regex = RegExp(r"\[([^\]]+)\]");
+        final match = regex.firstMatch(e.message ?? "");
+        if (match != null) {
+          return AuthResult(
+              errors:
+                  match.group(1)?.split(", ").map((s) => s.trim()).toList());
+        }
+      }
+      return AuthResult(errors: [e.message ?? "An error occurred"]);
     } catch (e) {
-      print(e);
+      return AuthResult(
+          errors: ["An unexpected error occurred. Please try again."]);
     }
-
-    return null;
   }
 
-  Future<User?> loginWithEmail(String email, String password) async {
+  Future<AuthResult> loginWithEmail(String email, String password) async {
     try {
       final cred = await _auth.signInWithEmailAndPassword(
           email: email, password: password);
-      return cred.user;
+      return AuthResult(user: cred.user);
     } on FirebaseAuthException catch (e) {
-      print(e.code);
-      print(e.message);
-      throw _getFirebaseAuthErrorMessage(e.code);
+      print("Error Code: ${e.code}");
+      print("Error Message: ${e.message}");
+      return AuthResult(errors: [_getFirebaseAuthErrorMessage(e.code)]);
     } catch (e) {
-      throw "An unexpected error occurred. Please try again.";
+      return AuthResult(
+          errors: ["An unexpected error occurred. Please try again."]);
     }
   }
 
@@ -143,16 +151,23 @@ class AuthService {
     }
   }
 
-  String _getFirebaseAuthErrorMessage(String? errorCode) {
-    switch (errorCode) {
+  String _getFirebaseAuthErrorMessage(String code) {
+    switch (code) {
       case "invalid-credential":
-        return "Invalid Email or Password";
+        return "Authentication failed. Please check your email and password.";
       case "user-disabled":
-        return "This account has been disabled. Please contact support.";
+        return "This user account has been disabled.";
       case "too-many-requests":
-        return "Too many failed attempts. Try again later.";
+        return "Too many failed login attempts. Please try again later.";
       default:
-        return "An unknown error occurred. Please try again.";
+        return "Authentication failed. An unknown error occured.";
     }
   }
+}
+
+class AuthResult {
+  final User? user;
+  final List<String>? errors;
+
+  AuthResult({this.user, this.errors});
 }

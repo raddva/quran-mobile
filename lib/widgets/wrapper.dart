@@ -27,7 +27,6 @@ class Wrapper extends StatelessWidget {
                   Future.delayed(Duration.zero, () {
                     Get.offNamed('/home');
                   });
-                  // return BottomNavbar();
                 }
                 return VerificationScreen();
               }
