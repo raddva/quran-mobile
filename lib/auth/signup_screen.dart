@@ -197,7 +197,7 @@ class _SignupScreenState extends State<SignupScreen> {
               Text("Already have an account?"),
               SizedBox(width: 4),
               InkWell(
-                onTap: () => _goToLogin,
+                onTap: _goToLogin,
                 child: Text(
                   'Sign In',
                   style: TextStyle(

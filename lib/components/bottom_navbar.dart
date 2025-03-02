@@ -14,8 +14,11 @@ class BottomNavbar extends StatefulWidget {
 
 class _BottomNavbarState extends State<BottomNavbar> {
   BottomNavController controller = Get.put(BottomNavController());
+
   @override
   Widget build(BuildContext context) {
+    double screenWidth = MediaQuery.of(context).size.width;
+
     return Scaffold(
       body: Obx(() => controller.pages[controller.index.value]),
       extendBody: true,
@@ -24,15 +27,15 @@ class _BottomNavbarState extends State<BottomNavbar> {
         children: [
           Positioned(
             bottom: 20,
-            left: 20,
-            right: 20,
+            left: screenWidth * 0.05,
+            right: screenWidth * 0.05,
             child: ClipRRect(
               borderRadius: BorderRadius.circular(30),
               child: BackdropFilter(
                 filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
                 child: Container(
                   padding:
-                      const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(30),
                     border: Border.all(
@@ -49,23 +52,28 @@ class _BottomNavbarState extends State<BottomNavbar> {
                       ),
                     ],
                   ),
-                  child: GNav(
-                    backgroundColor: Colors.transparent,
-                    color: Colors.green,
-                    activeColor: Colors.green,
-                    tabBackgroundColor: Colors.green.withOpacity(0.1),
-                    gap: 10,
-                    padding: const EdgeInsets.all(16),
-                    onTabChange: (value) {
-                      controller.index.value = value;
-                    },
-                    tabs: [
-                      GButton(icon: CupertinoIcons.home, text: 'Home'),
-                      GButton(icon: CupertinoIcons.calendar, text: 'Planner'),
-                      GButton(icon: CupertinoIcons.bookmark, text: 'Bookmark'),
-                      GButton(icon: CupertinoIcons.chart_bar, text: 'Tracker'),
-                      GButton(icon: CupertinoIcons.person, text: 'Profile'),
-                    ],
+                  child: SingleChildScrollView(
+                    child: GNav(
+                      backgroundColor: Colors.transparent,
+                      color: Colors.green,
+                      activeColor: Colors.green,
+                      tabBackgroundColor: Colors.green.withOpacity(0.1),
+                      gap: 10,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      padding: const EdgeInsets.all(14),
+                      onTabChange: (value) {
+                        controller.index.value = value;
+                      },
+                      tabs: [
+                        GButton(icon: CupertinoIcons.home, text: 'Home'),
+                        GButton(icon: CupertinoIcons.calendar, text: 'Planner'),
+                        GButton(
+                            icon: CupertinoIcons.bookmark, text: 'Bookmark'),
+                        GButton(
+                            icon: CupertinoIcons.chart_bar, text: 'Tracker'),
+                        GButton(icon: CupertinoIcons.person, text: 'Profile'),
+                      ],
+                    ),
                   ),
                 ),
               ),
