@@ -22,64 +22,76 @@ class _BottomNavbarState extends State<BottomNavbar> {
     return Scaffold(
       body: Obx(() => controller.pages[controller.index.value]),
       extendBody: true,
-      bottomNavigationBar: Stack(
-        alignment: Alignment.bottomCenter,
-        children: [
-          Positioned(
-            bottom: 20,
-            left: screenWidth * 0.05,
-            right: screenWidth * 0.05,
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(30),
-              child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(30),
-                    border: Border.all(
-                      color: Colors.green.withOpacity(0.3),
-                      width: 1.5,
-                    ),
-                    color: Colors.white.withOpacity(0.1),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.green.withOpacity(0.1),
-                        blurRadius: 15,
-                        spreadRadius: 2,
-                        offset: const Offset(0, 4),
+      bottomNavigationBar: SafeArea(
+        child: Stack(
+          alignment: Alignment.bottomCenter,
+          children: [
+            Positioned(
+              bottom: 20,
+              left: screenWidth * 0.05,
+              right: screenWidth * 0.05,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(25),
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                  child: Container(
+                    width: screenWidth * 0.9,
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(25),
+                      border: Border.all(
+                        color: Colors.green.withOpacity(0.3),
+                        width: 1.5,
                       ),
-                    ],
-                  ),
-                  child: SingleChildScrollView(
+                      color: Colors.white.withOpacity(0.1),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.green.withOpacity(0.1),
+                          blurRadius: 15,
+                          spreadRadius: 2,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
                     child: GNav(
                       backgroundColor: Colors.transparent,
                       color: Colors.green,
                       activeColor: Colors.green,
                       tabBackgroundColor: Colors.green.withOpacity(0.1),
-                      gap: 10,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      padding: const EdgeInsets.all(14),
+                      gap: 2,
+                      padding: EdgeInsets.all(6),
                       onTabChange: (value) {
                         controller.index.value = value;
                       },
                       tabs: [
-                        GButton(icon: CupertinoIcons.home, text: 'Home'),
-                        GButton(icon: CupertinoIcons.calendar, text: 'Planner'),
                         GButton(
-                            icon: CupertinoIcons.bookmark, text: 'Bookmark'),
+                            icon: CupertinoIcons.home,
+                            text: 'Home',
+                            iconSize: 22),
                         GButton(
-                            icon: CupertinoIcons.chart_bar, text: 'Tracker'),
-                        GButton(icon: CupertinoIcons.person, text: 'Profile'),
+                            icon: CupertinoIcons.calendar,
+                            text: 'Planner',
+                            iconSize: 22),
+                        GButton(
+                            icon: CupertinoIcons.bookmark,
+                            text: 'Bookmark',
+                            iconSize: 22),
+                        GButton(
+                            icon: CupertinoIcons.chart_bar,
+                            text: 'Tracker',
+                            iconSize: 22),
+                        GButton(
+                            icon: CupertinoIcons.person,
+                            text: 'Profile',
+                            iconSize: 22),
                       ],
                     ),
                   ),
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
