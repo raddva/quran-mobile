@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:quran_mobile/models/surah_model.dart';
 import 'package:http/http.dart' as http;
@@ -86,13 +87,23 @@ class _HomeScreenState extends State<HomeScreen> {
                     filled: true,
                     fillColor: Colors.green.withOpacity(0.2),
                     hintText: 'Search Surah',
-                    prefixIcon: Icon(Icons.search, color: Colors.green),
-                    // focusColor: Colors.green,
-                    // hoverColor: Colors.green[500],
-                    border: OutlineInputBorder(
+                    prefixIcon: Padding(
+                      padding: EdgeInsets.only(left: 12, right: 8),
+                      child: Icon(CupertinoIcons.search, color: Colors.green),
+                    ),
+                    contentPadding: EdgeInsets.symmetric(vertical: 14),
+                    enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12.0),
                       borderSide: BorderSide(
                         color: Colors.green,
+                        width: 1.5,
+                      ),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12.0),
+                      borderSide: BorderSide(
+                        color: Colors.green.shade700,
+                        width: 2.0,
                       ),
                     ),
                   ),
