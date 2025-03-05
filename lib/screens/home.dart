@@ -139,31 +139,34 @@ class _HomeScreenState extends State<HomeScreen> {
                                 color: Colors.white),
                           ),
                         ),
-                        title: Text(
-                          surah.name,
-                          style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                              color: Colors.white),
-                        ),
-                        subtitle: Row(
+                        title: Row(
                           children: [
                             Text(
-                              surah.translation,
+                              surah.name,
                               style: TextStyle(
-                                  fontWeight: FontWeight.w500,
-                                  fontSize: 14,
-                                  color: Colors.white70),
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                  color: Colors.white),
                             ),
-                            SizedBox(width: 5),
+                            SizedBox(width: 2),
                             Image.asset(
                               surah.tempatTurun == "Mekah"
-                                  ? 'assets/Icons/mecca.png'
-                                  : 'assets/Icons/madina.png',
+                                  ? 'assets/Icons/mecca-white.png'
+                                  : 'assets/Icons/madina-white.png',
                               width: 15,
                               height: 15,
                             ),
                           ],
+                        ),
+                        subtitle: Text(
+                          surah.translation.length > 18
+                              ? '${surah.translation.substring(0, 18)}...'
+                              : surah.translation,
+                          style: TextStyle(
+                            fontWeight: FontWeight.w500,
+                            fontSize: 14,
+                            color: Colors.white70,
+                          ),
                         ),
                         trailing: Text(
                           surah.arabic,
