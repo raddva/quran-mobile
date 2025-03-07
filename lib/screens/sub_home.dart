@@ -80,7 +80,13 @@ class _SubHomeScreenState extends State<SubHomeScreen> {
   @override
   void initState() {
     super.initState();
-    fetchSurahDetails();
+    fetchSurahDetails().then((_) {
+      if (widget.ayahNumber != null) {
+        Future.delayed(Duration(milliseconds: 100), () {
+          navigateToAyah(widget.ayahNumber!);
+        });
+      }
+    });
     fetchBookmarks();
     fetchNotes();
 
@@ -92,19 +98,15 @@ class _SubHomeScreenState extends State<SubHomeScreen> {
         }
       });
     });
-    if (widget.ayahNumber != null) {
-      Future.delayed(Duration(milliseconds: 100), () {
-        navigateToAyah(widget.ayahNumber!);
-      });
-    }
   }
 
   void navigateToAyah(int ayahNumber) {
-    int pageSize = 5;
-    int targetPage = ((ayahNumber - 1) / pageSize).floor() * pageSize + 1;
+    if (surahDetail == null || surahDetail!['ayat'] == null) return;
+
+    int newPage = ((ayahNumber - 1) ~/ itemsPerPage) + 1;
 
     setState(() {
-      // currentAyahNumber = targetPage;
+      currentPage = newPage;
     });
 
     Future.delayed(Duration(milliseconds: 100), () {
@@ -115,26 +117,21 @@ class _SubHomeScreenState extends State<SubHomeScreen> {
   }
 
   void scrollToAyah(int ayahNumber) {
-    if (surahDetail == null || surahDetail!['ayat'] == null) return;
-
-    if (ayahKeys.containsKey(ayahNumber)) {
+    Future.delayed(Duration(milliseconds: 100), () {
+      if (!ayahKeys.containsKey(ayahNumber)) return;
       final key = ayahKeys[ayahNumber];
 
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        RenderBox? box = key?.currentContext?.findRenderObject() as RenderBox?;
-        if (box != null) {
-          double offset = box.localToGlobal(Offset.zero).dy +
-              _scrollController.offset -
-              (MediaQuery.of(context).padding.top + 20);
-
-          _scrollController.animateTo(
-            offset,
-            duration: Duration(milliseconds: 700),
-            curve: Curves.easeInOut,
-          );
-        }
-      });
-    }
+      if (key?.currentContext != null) {
+        Scrollable.ensureVisible(
+          key!.currentContext!,
+          duration: Duration(milliseconds: 500),
+          curve: Curves.easeInOut,
+          alignment: 0.1,
+        );
+      } else {
+        debugPrint("Ayah key $ayahNumber not found");
+      }
+    });
   }
 
   @override
