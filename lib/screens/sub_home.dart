@@ -267,6 +267,7 @@ class _SubHomeScreenState extends State<SubHomeScreen> {
                   .where("ayah", isEqualTo: ayahNumber);
 
               final querySnapshot = await notesRef.get();
+              String message = "";
 
               if (querySnapshot.docs.isNotEmpty) {
                 final docId = querySnapshot.docs.first.id;
@@ -282,8 +283,8 @@ class _SubHomeScreenState extends State<SubHomeScreen> {
                   setState(() {
                     ayahNotes.remove(ayahNumber);
                   });
-                  showSuccessAlert(
-                      context, "Note removed for Ayah $ayahNumber");
+
+                  message = "Note removed for Ayah $ayahNumber";
                 } else {
                   await _firestore
                       .collection("users")
@@ -299,8 +300,7 @@ class _SubHomeScreenState extends State<SubHomeScreen> {
                     ayahNotes[ayahNumber] = noteController.text;
                   });
 
-                  showSuccessAlert(
-                      context, "Note updated for Ayah $ayahNumber");
+                  message = "Note updated for Ayah $ayahNumber";
                 }
               } else {
                 if (noteController.text.isNotEmpty) {
@@ -319,15 +319,22 @@ class _SubHomeScreenState extends State<SubHomeScreen> {
                     ayahNotes[ayahNumber] = noteController.text;
                   });
 
-                  showSuccessAlert(context, "Note added for Ayah $ayahNumber");
+                  message = "Note added for Ayah $ayahNumber";
                 } else {
                   showCustomAlertDialog(
                       context, "Failed", "Note can't be empty");
+                  return;
                 }
               }
-
-              // setState(() {});
               Navigator.pop(context);
+
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(message),
+                  backgroundColor: Colors.green,
+                  duration: Duration(seconds: 2),
+                ),
+              );
             },
             child: Text("Save"),
           ),
@@ -336,7 +343,6 @@ class _SubHomeScreenState extends State<SubHomeScreen> {
     );
   }
 
-  // int currentAyahNumber = 1;
   int currentPage = 1;
   final int itemsPerPage = 5;
   final int maxVisiblePages = 5;
