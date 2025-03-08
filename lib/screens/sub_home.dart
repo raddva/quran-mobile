@@ -11,6 +11,8 @@ import 'dart:convert';
 import 'package:expandable/expandable.dart';
 import 'package:quran_mobile/widgets/alert_dialog.dart';
 
+html.AudioElement? _webAudioElement;
+
 class SubHomeScreen extends StatefulWidget {
   final int surahNumber;
   final int? ayahNumber;
@@ -49,31 +51,61 @@ class _SubHomeScreenState extends State<SubHomeScreen> {
 
   void playAudio(String url, int ayahNumber) async {
     if (kIsWeb) {
-      html.AudioElement audioElement = html.AudioElement(url);
-      audioElement.play();
+      if (_webAudioElement != null) {
+        _webAudioElement!.pause();
+        _webAudioElement!.src = "";
+        _webAudioElement = null;
+      }
+
+      if (playingAyahNumber == ayahNumber) {
+        setState(() {
+          playingAyahNumber = null;
+          _playerState = PlayerState.stopped;
+        });
+        return;
+      }
+
+      _webAudioElement = html.AudioElement(url)
+        ..play()
+        ..onEnded.listen((event) {
+          setState(() {
+            playingAyahNumber = null;
+            _playerState = PlayerState.stopped;
+            _webAudioElement = null;
+          });
+        });
+
+      setState(() {
+        playingAyahNumber = ayahNumber;
+        _playerState = PlayerState.playing;
+      });
+    } else {
+      if (playingAyahNumber == ayahNumber) {
+        if (_playerState == PlayerState.playing) {
+          await _audioPlayer.pause();
+          setState(() => _playerState = PlayerState.paused);
+        } else {
+          await _audioPlayer.resume();
+          setState(() => _playerState = PlayerState.playing);
+        }
+        return;
+      }
+
+      await _audioPlayer.stop();
+      await _audioPlayer.setSourceUrl(url);
+      await _audioPlayer.resume();
+
       setState(() {
         playingAyahNumber = ayahNumber;
         _playerState = PlayerState.playing;
       });
 
-      audioElement.onEnded.listen((event) {
+      _audioPlayer.onPlayerComplete.listen((event) {
         setState(() {
           playingAyahNumber = null;
           _playerState = PlayerState.stopped;
         });
       });
-    } else {
-      if (playingAyahNumber == ayahNumber &&
-          _playerState == PlayerState.playing) {
-        await _audioPlayer.pause();
-      } else {
-        await _audioPlayer.stop();
-        await _audioPlayer.setSourceUrl(url);
-        await _audioPlayer.resume();
-        setState(() {
-          playingAyahNumber = ayahNumber;
-        });
-      }
     }
   }
 
