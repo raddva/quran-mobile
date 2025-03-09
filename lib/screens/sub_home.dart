@@ -375,6 +375,32 @@ class _SubHomeScreenState extends State<SubHomeScreen> {
     );
   }
 
+  Future<void> logTracker(List<dynamic> ayahs) async {
+    final user = _auth.currentUser;
+    if (user == null) return;
+
+    try {
+      for (var ayah in ayahs) {
+        int ayahNumber = ayah['nomorAyat'];
+        await _firestore
+            .collection("users")
+            .doc(user.uid)
+            .collection("tracker")
+            .add({
+          "user_id": user.uid,
+          "surah_id": widget.surahNumber,
+          "ayah_id": ayahNumber,
+          "completed_at": FieldValue.serverTimestamp(),
+          "status": "completed",
+        });
+      }
+
+      showSuccessAlert(context, "Saved Succesfully!");
+    } catch (e) {
+      showCustomAlertDialog(context, "Error", "Failed to log ayahs: $e");
+    }
+  }
+
   int currentPage = 1;
   final int itemsPerPage = 5;
   final int maxVisiblePages = 5;
@@ -415,10 +441,30 @@ class _SubHomeScreenState extends State<SubHomeScreen> {
       backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.green[800],
-        title: Text(
-          surahDetail?['namaLatin'] ?? 'Loading...',
-          style: TextStyle(
-              fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Expanded(
+              child: Text(
+                surahDetail?['namaLatin'] ?? 'Loading...',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            IconButton(
+              icon: Icon(
+                CupertinoIcons.checkmark_alt_circle,
+                color: Colors.white,
+                size: 28,
+              ),
+              onPressed: () => logTracker(getCurrentAyahs()),
+              tooltip: "Mark Page as Completed",
+            ),
+          ],
         ),
         centerTitle: true,
         leading: IconButton(
