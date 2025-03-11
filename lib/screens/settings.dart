@@ -35,8 +35,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
   void updateUserInfo() async {
     showCustomAlertDialog(
       context,
-      "Confirm Deletion",
-      "Are you sure you want to delete this note?",
+      "Confirmation",
+      "Are you sure you want to update your profile?",
       onConfirm: () async {
         String newName = nameController.text;
         String newEmail = emailController.text;

@@ -379,9 +379,25 @@ class _SubHomeScreenState extends State<SubHomeScreen> {
     final user = _auth.currentUser;
     if (user == null) return;
 
+    bool allLogged = true;
+
     try {
       for (var ayah in ayahs) {
         int ayahNumber = ayah['nomorAyat'];
+
+        var existingAyah = await _firestore
+            .collection("users")
+            .doc(user.uid)
+            .collection("tracker")
+            .where("surah_id", isEqualTo: widget.surahNumber)
+            .where("ayah_id", isEqualTo: ayahNumber)
+            .get();
+
+        if (existingAyah.docs.isNotEmpty) {
+          continue;
+        }
+        allLogged = false;
+
         await _firestore
             .collection("users")
             .doc(user.uid)
@@ -391,11 +407,16 @@ class _SubHomeScreenState extends State<SubHomeScreen> {
           "surah_id": widget.surahNumber,
           "ayah_id": ayahNumber,
           "completed_at": FieldValue.serverTimestamp(),
-          "status": "completed",
+          "status": "tracker",
         });
       }
 
-      showSuccessAlert(context, "Saved Succesfully!");
+      if (allLogged) {
+        showCustomAlertDialog(context, "Info", "This page is already logged.");
+        return;
+      }
+
+      showSuccessAlert(context, "Saved Successfully!");
     } catch (e) {
       showCustomAlertDialog(context, "Error", "Failed to log ayahs: $e");
     }
