@@ -62,7 +62,8 @@ class _TrackerScreenState extends State<TrackerScreen>
           .collection("users")
           .doc(user.uid)
           .collection("tracker")
-          .orderBy("completed_at", descending: true)
+          .where("status", isEqualTo: "tracker")
+          // .orderBy("completed_at", descending: true)
           .get();
 
       Map<int, Map<String, List<int>>> groupedData = {};
@@ -329,43 +330,39 @@ class _TrackerScreenState extends State<TrackerScreen>
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(4),
         border: Border.all(color: Colors.grey.shade300),
         color: Colors.white,
       ),
       child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: SingleChildScrollView(
-          scrollDirection: Axis.vertical,
-          child: DataTable(
-            columnSpacing: 20,
-            headingRowColor: MaterialStateColor.resolveWith(
-                (states) => Colors.green.shade100),
-            columns: const [
-              DataColumn(
-                  label: Text("No",
-                      style: TextStyle(fontWeight: FontWeight.bold))),
-              DataColumn(
-                  label: Text("Surah",
-                      style: TextStyle(fontWeight: FontWeight.bold))),
-              DataColumn(
-                  label: Text("Ayah",
-                      style: TextStyle(fontWeight: FontWeight.bold))),
-              DataColumn(
-                  label: Text("Completed",
-                      style: TextStyle(fontWeight: FontWeight.bold))),
-            ],
-            rows: List.generate(data.length, (index) {
-              final item = data[index];
+        scrollDirection: Axis.vertical,
+        child: DataTable(
+          headingRowColor:
+              MaterialStateColor.resolveWith((states) => Colors.green.shade100),
+          columns: const [
+            DataColumn(
+                label:
+                    Text("No", style: TextStyle(fontWeight: FontWeight.bold))),
+            DataColumn(
+                label: Text("Surah",
+                    style: TextStyle(fontWeight: FontWeight.bold))),
+            DataColumn(
+                label: Text("Ayah",
+                    style: TextStyle(fontWeight: FontWeight.bold))),
+            DataColumn(
+                label: Text("Completed",
+                    style: TextStyle(fontWeight: FontWeight.bold))),
+          ],
+          rows: List.generate(data.length, (index) {
+            final item = data[index];
 
-              return DataRow(cells: [
-                DataCell(Text("${index + 1}")),
-                DataCell(Text(item["surah"] ?? "Unknown")),
-                DataCell(Text(item["ayah_range"] ?? "N/A")),
-                DataCell(Text(item["completed_at"] ?? "N/A")),
-              ]);
-            }),
-          ),
+            return DataRow(cells: [
+              DataCell(Text("${index + 1}")),
+              DataCell(Text(item["surah"] ?? "Unknown")),
+              DataCell(Text(item["ayah_range"] ?? "N/A")),
+              DataCell(Text(item["completed_at"] ?? "N/A")),
+            ]);
+          }),
         ),
       ),
     );
