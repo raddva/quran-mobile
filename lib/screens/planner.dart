@@ -36,6 +36,8 @@ class _PlannerScreenState extends State<PlannerScreen> {
   int? fromAyah = 1;
   int? toAyah = 1;
 
+  final user = FirebaseAuth.instance.currentUser;
+
   @override
   void initState() {
     super.initState();
@@ -63,6 +65,44 @@ class _PlannerScreenState extends State<PlannerScreen> {
     }
   }
 
+  Stream<QuerySnapshot> fetchPlanners() {
+    return FirebaseFirestore.instance
+        .collection("users")
+        .doc(user?.uid)
+        .collection("planner")
+        .orderBy("created_at", descending: true)
+        .snapshots();
+  }
+
+  String getSurahName(int surahNumber) {
+    if (surahList.isEmpty ||
+        surahNumber < 1 ||
+        surahNumber > surahList.length) {
+      return "Unknown";
+    }
+    return surahList[surahNumber - 1]["namaLatin"];
+  }
+
+  int calculateAyahCount(int fromSurah, int fromAyah, int toSurah, int toAyah) {
+    int count = 0;
+
+    if (surahList.isEmpty) return count;
+
+    for (int i = fromSurah; i <= toSurah; i++) {
+      int ayahCount = surahList[i - 1]["jumlahAyat"];
+
+      if (i == fromSurah) {
+        count += (ayahCount - fromAyah + 1);
+      } else if (i == toSurah) {
+        count += toAyah;
+      } else {
+        count += ayahCount;
+      }
+    }
+
+    return count;
+  }
+
   void savePlanner(
       String name,
       int fromSurah,
@@ -74,13 +114,12 @@ class _PlannerScreenState extends State<PlannerScreen> {
       TimeOfDay notificationTime,
       DateTime startDate,
       DateTime endDate) async {
-    final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
 
     try {
       final plannerRef = FirebaseFirestore.instance
           .collection("users")
-          .doc(user.uid)
+          .doc(user?.uid)
           .collection("planner");
 
       final notificationTimeFormatted = notificationEnabled
@@ -99,7 +138,7 @@ class _PlannerScreenState extends State<PlannerScreen> {
         "to_surah": toSurah + 1,
         "to_ayah": toAyah,
         "created_at": FieldValue.serverTimestamp(),
-        "user_id": user.uid,
+        "user_id": user?.uid,
       });
 
       showSuccessAlert(context, "Planner saved Successfully!");
@@ -471,14 +510,14 @@ class _PlannerScreenState extends State<PlannerScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: CustomScrollView(
-        slivers: [
-          SliverAppBar(
-            pinned: true,
-            floating: false,
-            expandedHeight: 50,
-            backgroundColor: Colors.transparent,
-            flexibleSpace: FlexibleSpaceBar(
+      body: Column(
+        children: [
+          SizedBox(
+            height: 50,
+            child: AppBar(
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              centerTitle: true,
               title: Text(
                 "Planner",
                 style: TextStyle(
@@ -487,136 +526,161 @@ class _PlannerScreenState extends State<PlannerScreen> {
                   fontSize: 16,
                 ),
               ),
-              centerTitle: true,
             ),
           ),
-          SliverPadding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
-            sliver: SliverList(
-              delegate: SliverChildListDelegate([
-                Card(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  color: Colors.green[50],
-                  elevation: 2,
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          "Test Planner",
-                          style: TextStyle(
-                              fontSize: 18, fontWeight: FontWeight.bold),
-                        ),
-                        SizedBox(height: 8),
-                        Row(
-                          children: [
-                            Icon(Icons.star, size: 18, color: Colors.amber),
-                            SizedBox(width: 8),
-                            Text("Al-Fatihah 1:1 to Al-Baqarah 2:5"),
-                          ],
-                        ),
-                        SizedBox(height: 4),
-                        Row(
-                          children: [
-                            Icon(Icons.book, size: 18, color: Colors.grey),
-                            SizedBox(width: 8),
-                            Text("Page no. 1 - 2"),
-                          ],
-                        ),
-                        Row(
-                          children: [
-                            Icon(Icons.menu_book, size: 18, color: Colors.grey),
-                            SizedBox(width: 8),
-                            Text("Juz no. 1"),
-                          ],
-                        ),
-                        SizedBox(height: 4),
-                        Row(
-                          children: [
-                            Icon(Icons.remove_red_eye,
-                                size: 18, color: Colors.blue),
-                            SizedBox(width: 8),
-                            Text("Currently at Al-Fatihah 1:1"),
-                          ],
-                        ),
-                        Row(
-                          children: [
-                            Icon(Icons.calendar_today,
-                                size: 18, color: Colors.red),
-                            SizedBox(width: 8),
-                            Text("Ends in Feb 17, 2025 (in 0 days)"),
-                          ],
-                        ),
-                        SizedBox(height: 8),
-                        LinearProgressIndicator(
-                          value: progress,
-                          backgroundColor: Colors.grey[300],
-                          valueColor:
-                              AlwaysStoppedAnimation<Color>(Colors.green),
-                        ),
-                        SizedBox(height: 8),
-                        Text("${(progress * 100).toInt()}% Completed"),
-                        SizedBox(height: 12),
-                        if (isBehind)
-                          Container(
-                            padding: EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: Colors.amber[100],
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Row(
-                              children: [
-                                Icon(Icons.warning, color: Colors.brown),
-                                SizedBox(width: 8),
-                                Expanded(
-                                  child: Text(
-                                      "You are behind 1 session. You can do it!"),
+          Expanded(
+            child: StreamBuilder<QuerySnapshot>(
+              stream: fetchPlanners(),
+              builder: (context, snapshot) {
+                if (!snapshot.hasData ||
+                    snapshot.connectionState == ConnectionState.waiting) {
+                  return Center(child: CircularProgressIndicator());
+                }
+
+                var planners = snapshot.data!.docs;
+
+                return CustomScrollView(
+                  slivers: [
+                    SliverPadding(
+                      padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
+                      sliver: SliverList(
+                        delegate: SliverChildBuilderDelegate(
+                          (context, index) {
+                            var planner =
+                                planners[index].data() as Map<String, dynamic>;
+
+                            String name = planner["name"] ?? "Untitled";
+                            Timestamp startTimestamp = planner["start_date"];
+                            Timestamp endTimestamp = planner["end_date"];
+                            int dailyGoal = planner["daily_goal"] ?? 0;
+                            double progress =
+                                (planner["progress"] ?? 0.0).toDouble();
+
+                            int fromSurah = planner["from_surah"] ?? 1;
+                            int toSurah = planner["to_surah"] ?? 1;
+                            int fromAyah = planner["from_ayah"] ?? 1;
+                            int toAyah = planner["to_ayah"] ?? 1;
+
+                            String startDate = DateFormat.yMMMd()
+                                .format(startTimestamp.toDate());
+                            String endDate = DateFormat.yMMMd()
+                                .format(endTimestamp.toDate());
+
+                            String fromSurahName = getSurahName(fromSurah);
+                            String toSurahName = getSurahName(toSurah);
+
+                            int ayahCount = calculateAyahCount(
+                                fromSurah, fromAyah, toSurah, toAyah);
+
+                            return Card(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              color: Colors.green[50],
+                              elevation: 2,
+                              child: Padding(
+                                padding: const EdgeInsets.all(16.0),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.center,
+                                      children: [
+                                        Expanded(
+                                          child: Text(
+                                            name,
+                                            style: TextStyle(
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                        if (planner["remind_time"] != null)
+                                          Padding(
+                                            padding: EdgeInsets.only(left: 8),
+                                            child: Icon(
+                                              CupertinoIcons.bell_fill,
+                                              color: Colors.orange,
+                                              size: 20,
+                                            ),
+                                          ),
+                                      ],
+                                    ),
+                                    SizedBox(height: 8),
+                                    Row(
+                                      children: [
+                                        Icon(CupertinoIcons.book,
+                                            size: 18, color: Colors.grey),
+                                        SizedBox(width: 8),
+                                        Text(
+                                            "$fromSurahName $fromAyah : $toSurahName $toAyah"),
+                                      ],
+                                    ),
+                                    Row(
+                                      children: [
+                                        Icon(CupertinoIcons.calendar_today,
+                                            size: 18, color: Colors.red),
+                                        SizedBox(width: 8),
+                                        Text(
+                                            "From $startDate to $endDate ($dailyGoal days)"),
+                                      ],
+                                    ),
+                                    Row(
+                                      children: [
+                                        Icon(CupertinoIcons.time,
+                                            size: 18, color: Colors.blue),
+                                        SizedBox(width: 8),
+                                        Text("Goal: $ayahCount Ayahs"),
+                                      ],
+                                    ),
+                                    SizedBox(height: 8),
+                                    LinearProgressIndicator(
+                                      value: progress,
+                                      backgroundColor: Colors.grey[300],
+                                      valueColor: AlwaysStoppedAnimation<Color>(
+                                          Colors.green),
+                                    ),
+                                    SizedBox(height: 8),
+                                    Text(
+                                        "${(progress * 100).toInt()}% Completed"),
+                                    SizedBox(height: 12),
+                                    Align(
+                                      alignment: Alignment.bottomRight,
+                                      child: TextButton(
+                                        onPressed: () {},
+                                        style: TextButton.styleFrom(
+                                          foregroundColor: Colors.green[700],
+                                        ),
+                                        child: Text("Details"),
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                              ],
-                            ),
-                          ),
-                      ],
+                              ),
+                            );
+                          },
+                          childCount: planners.length,
+                        ),
+                      ),
                     ),
-                  ),
-                ),
-              ]),
+                  ],
+                );
+              },
             ),
           ),
-          SliverFillRemaining(
-            hasScrollBody: false,
-            child: Stack(
-              children: [
-                Align(
-                  alignment: Alignment.bottomRight,
-                  child: Padding(
-                    padding: EdgeInsets.only(right: 16.0, bottom: 100.0),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(color: Colors.green, width: 1),
-                      ),
-                      child: FloatingActionButton(
-                        onPressed: () {
-                          _showAddPlannerDialog();
-                        },
-                        elevation: 0,
-                        highlightElevation: 0,
-                        hoverElevation: 0,
-                        focusElevation: 0,
-                        hoverColor: Colors.transparent,
-                        backgroundColor: Colors.transparent,
-                        child: Icon(CupertinoIcons.add, color: Colors.green),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          )
         ],
+      ),
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.only(bottom: 75.0),
+        child: FloatingActionButton(
+          onPressed: () {
+            _showAddPlannerDialog();
+          },
+          backgroundColor: Colors.green,
+          child: Icon(CupertinoIcons.add, color: Colors.white),
+        ),
       ),
     );
   }
