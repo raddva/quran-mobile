@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 import 'package:quran_mobile/screens/sub_home.dart';
+import 'package:quran_mobile/utils/functions.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -17,15 +18,6 @@ class _HomeScreenState extends State<HomeScreen> {
   List<Surah> surahList = [];
   List<Surah> filteredSurahList = [];
   TextEditingController searchController = TextEditingController();
-
-  String convertToArabicNumber(int number) {
-    final arabicDigits = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
-    return number
-        .toString()
-        .split('')
-        .map((digit) => arabicDigits[int.parse(digit)])
-        .join();
-  }
 
   @override
   void initState() {
@@ -143,7 +135,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         leading: CircleAvatar(
                           backgroundColor: Colors.green[700],
                           child: Text(
-                            '${convertToArabicNumber(surah.number)}',
+                            convertToArabicNumber(surah.number),
                             style: TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,

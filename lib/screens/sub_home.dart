@@ -9,6 +9,7 @@ import 'package:flutter_html/flutter_html.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:expandable/expandable.dart';
+import 'package:quran_mobile/utils/functions.dart';
 import 'package:quran_mobile/widgets/alert_dialog.dart';
 
 html.AudioElement? _webAudioElement;
@@ -16,8 +17,14 @@ html.AudioElement? _webAudioElement;
 class SubHomeScreen extends StatefulWidget {
   final int surahNumber;
   final int? ayahNumber;
+  final String? plannerId;
 
-  const SubHomeScreen({super.key, required this.surahNumber, this.ayahNumber});
+  const SubHomeScreen({
+    super.key,
+    required this.surahNumber,
+    this.ayahNumber,
+    this.plannerId,
+  });
 
   @override
   State<SubHomeScreen> createState() => _SubHomeScreenState();
@@ -26,6 +33,8 @@ class SubHomeScreen extends StatefulWidget {
 class _SubHomeScreenState extends State<SubHomeScreen> {
   Map<String, dynamic>? surahDetail;
   bool isLoading = true;
+  Map<String, dynamic>? plannerData;
+  List<Map<String, dynamic>> surahList = [];
 
   final AudioPlayer _audioPlayer = AudioPlayer();
 
@@ -39,15 +48,6 @@ class _SubHomeScreenState extends State<SubHomeScreen> {
   Set<int> bookmarkedAyahs = {};
   Map<int, String> ayahNotes = {};
   Map<int, GlobalKey> ayahKeys = {};
-
-  String convertToArabicNumber(int number) {
-    final arabicDigits = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
-    return number
-        .toString()
-        .split('')
-        .map((digit) => arabicDigits[int.parse(digit)])
-        .join();
-  }
 
   void playAudio(String url, int ayahNumber) async {
     if (kIsWeb) {
@@ -119,8 +119,11 @@ class _SubHomeScreenState extends State<SubHomeScreen> {
         });
       }
     });
+    fetchSurahs();
+
     fetchBookmarks();
     fetchNotes();
+    fetchPlannerData();
 
     _audioPlayer.onPlayerStateChanged.listen((PlayerState state) {
       setState(() {
@@ -186,6 +189,27 @@ class _SubHomeScreenState extends State<SubHomeScreen> {
     }
   }
 
+  Future<void> fetchSurahs() async {
+    try {
+      final response =
+          await http.get(Uri.parse("https://equran.id/api/v2/surat"));
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (data["data"] is List) {
+          setState(() {
+            surahList = List<Map<String, dynamic>>.from(data["data"]);
+            isLoading = false;
+          });
+        }
+      } else {
+        throw Exception("Failed to load Surahs");
+      }
+    } catch (e) {
+      print("Error fetching Surahs: $e");
+      setState(() => isLoading = false);
+    }
+  }
+
   Future<void> fetchBookmarks() async {
     final user = _auth.currentUser;
     if (user == null) return;
@@ -220,6 +244,31 @@ class _SubHomeScreenState extends State<SubHomeScreen> {
           doc['ayah'] as int: doc['note'] as String
       };
     });
+  }
+
+  Future<void> fetchPlannerData() async {
+    try {
+      final user = _auth.currentUser;
+      if (user == null) return;
+
+      final doc = await FirebaseFirestore.instance
+          .collection("users")
+          .doc(user.uid)
+          .collection("planner")
+          .doc(widget.plannerId)
+          .get();
+
+      if (doc.exists) {
+        plannerData = doc.data();
+      }
+
+      setState(() {
+        isLoading = false;
+      });
+    } catch (e) {
+      print("Error fetching data: $e");
+      setState(() => isLoading = false);
+    }
   }
 
   void toggleBookmark(int ayahNumber) async {
@@ -375,7 +424,8 @@ class _SubHomeScreenState extends State<SubHomeScreen> {
     );
   }
 
-  Future<void> logTracker(List<dynamic> ayahs) async {
+  Future<void> logTracker(
+      List<dynamic> ayahs, String status, String? plannerId) async {
     final user = _auth.currentUser;
     if (user == null) return;
 
@@ -385,30 +435,45 @@ class _SubHomeScreenState extends State<SubHomeScreen> {
       for (var ayah in ayahs) {
         int ayahNumber = ayah['nomorAyat'];
 
-        var existingAyah = await _firestore
+        var query = _firestore
             .collection("users")
             .doc(user.uid)
             .collection("tracker")
             .where("surah_id", isEqualTo: widget.surahNumber)
             .where("ayah_id", isEqualTo: ayahNumber)
-            .get();
+            .where("status", isEqualTo: status);
+
+        if (plannerId != null) {
+          query = query.where("planner_id", isEqualTo: plannerId);
+        } else {
+          query = query.where("planner_id", isNull: true);
+        }
+
+        var existingAyah = await query.get();
 
         if (existingAyah.docs.isNotEmpty) {
           continue;
         }
+
         allLogged = false;
+
+        Map<String, dynamic> trackerData = {
+          "user_id": user.uid,
+          "surah_id": widget.surahNumber,
+          "ayah_id": ayahNumber,
+          "completed_at": FieldValue.serverTimestamp(),
+          "status": status,
+        };
+
+        if (plannerId != null) {
+          trackerData["planner_id"] = plannerId;
+        }
 
         await _firestore
             .collection("users")
             .doc(user.uid)
             .collection("tracker")
-            .add({
-          "user_id": user.uid,
-          "surah_id": widget.surahNumber,
-          "ayah_id": ayahNumber,
-          "completed_at": FieldValue.serverTimestamp(),
-          "status": "tracker",
-        });
+            .add(trackerData);
       }
 
       if (allLogged) {
@@ -416,10 +481,84 @@ class _SubHomeScreenState extends State<SubHomeScreen> {
         return;
       }
 
+      if (status == "planner" && plannerId != null) {
+        await updatePlannerProgress(plannerId);
+      }
+
       showSuccessAlert(context, "Saved Successfully!");
     } catch (e) {
       showCustomAlertDialog(context, "Error", "Failed to log ayahs: $e");
     }
+  }
+
+  Future<void> updatePlannerProgress(String plannerId) async {
+    final user = _auth.currentUser;
+    if (user == null) return;
+
+    try {
+      final plannerDoc = await _firestore
+          .collection("users")
+          .doc(user.uid)
+          .collection("planner")
+          .doc(plannerId)
+          .get();
+
+      if (!plannerDoc.exists) return;
+
+      final plannerData = plannerDoc.data();
+      if (plannerData == null) return;
+
+      int fromSurah = plannerData["from_surah"];
+      int fromAyah = plannerData["from_ayah"];
+      int toSurah = plannerData["to_surah"];
+      int toAyah = plannerData["to_ayah"];
+
+      int totalAyahs = calculateAyahCount(fromSurah, fromAyah, toSurah, toAyah);
+
+      final trackerSnap = await _firestore
+          .collection("users")
+          .doc(user.uid)
+          .collection("tracker")
+          .where("planner_id", isEqualTo: plannerId)
+          .where("status", isEqualTo: "planner")
+          .get();
+
+      int completedCount = trackerSnap.docs.length;
+      double progress = (completedCount / totalAyahs * 100);
+
+      await _firestore
+          .collection("users")
+          .doc(user.uid)
+          .collection("planner")
+          .doc(plannerId)
+          .update({"progress": progress});
+    } catch (e) {
+      print("Error updating planner progress: $e");
+    }
+  }
+
+  int calculateAyahCount(int fromSurah, int fromAyah, int toSurah, int toAyah) {
+    int count = 0;
+
+    if (surahList.isEmpty) return count;
+
+    if (fromSurah == toSurah) {
+      return toAyah - fromAyah + 1;
+    }
+
+    for (int i = fromSurah; i <= toSurah; i++) {
+      int ayahCount = surahList[i - 1]["jumlahAyat"];
+
+      if (i == fromSurah) {
+        count += (ayahCount - fromAyah + 1);
+      } else if (i == toSurah) {
+        count += toAyah;
+      } else {
+        count += ayahCount;
+      }
+    }
+
+    return count;
   }
 
   int currentPage = 1;
@@ -434,6 +573,27 @@ class _SubHomeScreenState extends State<SubHomeScreen> {
         .where((ayat) =>
             ayat['nomorAyat'] >= startAyah && ayat['nomorAyat'] < endAyah)
         .toList();
+  }
+
+  List<Map<String, dynamic>> getCurrentPlannerPageAyahs() {
+    if (surahDetail == null || plannerData == null) return [];
+
+    int plannerFrom = plannerData!['from_ayah'];
+    int plannerTo = plannerData!['to_ayah'];
+
+    int pageFrom = (currentPage - 1) * itemsPerPage + 1;
+    int pageTo = pageFrom + itemsPerPage - 1;
+
+    final List<Map<String, dynamic>> ayatList =
+        List<Map<String, dynamic>>.from(surahDetail!['ayat']);
+
+    return ayatList.where((ayat) {
+      int ayahNum = ayat['nomorAyat'];
+      return ayahNum >= plannerFrom &&
+          ayahNum <= plannerTo &&
+          ayahNum >= pageFrom &&
+          ayahNum <= pageTo;
+    }).toList();
   }
 
   void changePage(int newPage) {
@@ -482,7 +642,7 @@ class _SubHomeScreenState extends State<SubHomeScreen> {
                 color: Colors.white,
                 size: 28,
               ),
-              onPressed: () => logTracker(getCurrentAyahs()),
+              onPressed: () => logTracker(getCurrentAyahs(), "tracker", null),
               tooltip: "Mark Page as Completed",
             ),
           ],
@@ -493,6 +653,17 @@ class _SubHomeScreenState extends State<SubHomeScreen> {
           onPressed: () => Navigator.pop(context),
         ),
         actions: [
+          if (widget.plannerId != null)
+            IconButton(
+              icon: Icon(
+                CupertinoIcons.text_badge_checkmark,
+                color: Colors.white,
+                size: 26,
+              ),
+              onPressed: () => logTracker(
+                  getCurrentPlannerPageAyahs(), "planner", widget.plannerId),
+              tooltip: "Log to Planner",
+            ),
           IconButton(
             icon: Icon(CupertinoIcons.info, color: Colors.white),
             tooltip: "Details",
