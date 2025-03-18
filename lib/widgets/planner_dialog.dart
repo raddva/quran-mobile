@@ -23,6 +23,7 @@ void showPlannerDialog({
   DateTime? initialEndDate,
   bool initialNotificationEnabled = false,
   TimeOfDay? initialNotificationTime,
+  double? initialProgress,
   required Function() refreshParent,
 }) {
   showModalBottomSheet(
@@ -43,6 +44,7 @@ void showPlannerDialog({
         initialEndDate: initialEndDate,
         initialNotificationEnabled: initialNotificationEnabled,
         initialNotificationTime: initialNotificationTime,
+        initialProgress: initialProgress,
         refreshParent: refreshParent,
       );
     },
@@ -56,7 +58,7 @@ class _PlannerDialogContent extends StatefulWidget {
   final int? initialFromAyah;
   final int? initialToSurah;
   final int? initialToAyah;
-  final int? initialDays;
+  final double? initialProgress;
   final DateTime? initialStartDate;
   final DateTime? initialEndDate;
   final bool initialNotificationEnabled;
@@ -71,7 +73,7 @@ class _PlannerDialogContent extends StatefulWidget {
     this.initialFromAyah,
     this.initialToSurah,
     this.initialToAyah,
-    this.initialDays,
+    this.initialProgress,
     this.initialStartDate,
     this.initialEndDate,
     this.initialNotificationEnabled = false,
@@ -128,6 +130,7 @@ class _PlannerDialogContentState extends State<_PlannerDialogContent> {
     notificationTime =
         widget.initialNotificationTime ?? TimeOfDay(hour: 12, minute: 30);
 
+    progress = widget.initialProgress ?? 0.0;
     fetchSurahs();
   }
 
@@ -190,7 +193,7 @@ class _PlannerDialogContentState extends State<_PlannerDialogContent> {
       "end_date": Timestamp.fromDate(endDate!),
       "remind_time": notificationTimeFormatted,
       "daily_goal": calculatedDays,
-      "progress": 0.0,
+      "progress": progress,
       "from_surah": (fromSurahIndex ?? 0) + 1,
       "from_ayah": fromAyah ?? 1,
       "to_surah": (toSurahIndex ?? 0) + 1,

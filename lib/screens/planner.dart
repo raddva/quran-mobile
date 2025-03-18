@@ -89,6 +89,10 @@ class _PlannerScreenState extends State<PlannerScreen> {
 
     if (surahList.isEmpty) return count;
 
+    if (fromSurah == toSurah) {
+      return toAyah;
+    }
+
     for (int i = fromSurah; i <= toSurah; i++) {
       int ayahCount = surahList[i - 1]["jumlahAyat"];
 
@@ -238,14 +242,13 @@ class _PlannerScreenState extends State<PlannerScreen> {
                                     ),
                                     SizedBox(height: 8),
                                     LinearProgressIndicator(
-                                      value: progress,
+                                      value: (progress / 100).clamp(0.0, 1.0),
                                       backgroundColor: Colors.grey[300],
                                       valueColor: AlwaysStoppedAnimation<Color>(
                                           Colors.green),
                                     ),
                                     SizedBox(height: 8),
-                                    Text(
-                                        "${(progress * 100).toInt()}% Completed"),
+                                    Text("${(progress).toInt()}% Completed"),
                                     SizedBox(height: 6),
                                     Align(
                                       alignment: Alignment.bottomRight,
