@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get/get.dart';
+import 'package:quran_mobile/admin/home_admin.dart';
 import 'package:quran_mobile/components/bottom_navbar.dart';
 import 'package:quran_mobile/screens/onboarding.dart';
 import 'package:quran_mobile/widgets/wrapper.dart';
@@ -43,13 +44,16 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
         fontFamily: 'Inter',
       ),
-      // home: BottomNavbar(),
       debugShowCheckedModeBanner: false,
       initialRoute: '/',
       getPages: [
+        // User
         GetPage(name: '/', page: () => OnboardingScreen()),
         GetPage(name: '/home', page: () => BottomNavbar()),
         GetPage(name: '/auth', page: () => Wrapper()),
+
+        // Admin
+        GetPage(name: '/admin', page: () => AdminDashboard()),
       ],
     );
   }

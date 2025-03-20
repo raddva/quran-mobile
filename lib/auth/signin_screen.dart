@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:quran_mobile/auth/auth_service.dart';
 import 'package:quran_mobile/auth/forgot_password_screen.dart';
@@ -42,19 +43,35 @@ class _LoginScreenState extends State<LoginScreen> {
     try {
       AuthResult result =
           await _auth.loginWithEmail(_email.text, _password.text);
-
       setState(() => _isLoading = false);
 
       if (result.user != null) {
-        Get.offNamed('/home');
+        final user = result.user;
+
+        final adminDoc = await FirebaseFirestore.instance
+            .collection('admin')
+            .doc(user?.uid)
+            .get();
+
+        if (adminDoc.exists) {
+          Get.offNamed('/admin');
+        } else {
+          Get.offNamed('/home');
+        }
       } else {
-        showCustomAlertDialog(context, "Login Failed",
-            result.errors?.join("\n") ?? "Unknown error");
+        showCustomAlertDialog(
+          context,
+          "Login Failed",
+          result.errors?.join("\n") ?? "Unknown error",
+        );
       }
     } catch (e) {
       setState(() => _isLoading = false);
       showCustomAlertDialog(
-          context, "Login Failed", "An unexpected error occurred.");
+        context,
+        "Login Failed",
+        "An unexpected error occurred.",
+      );
     }
   }
 
@@ -230,13 +247,27 @@ class _LoginScreenState extends State<LoginScreen> {
           InkWell(
             onTap: () async {
               try {
-                final user = await _auth.loginWithGoogle();
+                final userCredential = await _auth.loginWithGoogle();
+                final user = userCredential?.user;
+
                 if (user != null) {
-                  Get.offNamed('/home');
+                  final adminDoc = await FirebaseFirestore.instance
+                      .collection('admins')
+                      .doc(user.uid)
+                      .get();
+
+                  if (adminDoc.exists) {
+                    Get.offNamed('/admin-dashboard');
+                  } else {
+                    Get.offNamed('/home');
+                  }
                 }
               } catch (e) {
                 showCustomAlertDialog(
-                    context, "Google Sign-In Failed", e.toString());
+                  context,
+                  "Google Sign-In Failed",
+                  e.toString(),
+                );
               }
             },
             child: SquareTile(imgPath: 'assets/Images/google-logo.png'),
