@@ -2,11 +2,13 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:get/get.dart';
-import 'package:quran_mobile/admin/home_admin.dart';
+import 'package:quran_mobile/admin/admin_layout.dart';
 import 'package:quran_mobile/components/bottom_navbar.dart';
 import 'package:quran_mobile/screens/onboarding.dart';
 import 'package:quran_mobile/widgets/wrapper.dart';
+import 'package:timezone/data/latest.dart' as tz;
 
 void main() async {
   await dotenv.load(fileName: "assets/.env");
@@ -29,11 +31,28 @@ void main() async {
   } else {
     await Firebase.initializeApp();
   }
-  runApp(const MyApp());
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  MyApp({super.key});
+
+  final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+      FlutterLocalNotificationsPlugin();
+
+  Future<void> initializeNotifications() async {
+    tz.initializeTimeZones();
+
+    const AndroidInitializationSettings initializationSettingsAndroid =
+        AndroidInitializationSettings('@mipmap/ic_launcher');
+
+    final InitializationSettings initializationSettings =
+        InitializationSettings(
+      android: initializationSettingsAndroid,
+    );
+
+    await flutterLocalNotificationsPlugin.initialize(initializationSettings);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -53,7 +72,7 @@ class MyApp extends StatelessWidget {
         GetPage(name: '/auth', page: () => Wrapper()),
 
         // Admin
-        GetPage(name: '/admin', page: () => AdminDashboard()),
+        GetPage(name: '/admin', page: () => AdminLayout()),
       ],
     );
   }
