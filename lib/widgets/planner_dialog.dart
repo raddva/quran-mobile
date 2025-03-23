@@ -459,20 +459,20 @@ class _PlannerDialogContentState extends State<_PlannerDialogContent> {
             ],
           ),
           SizedBox(height: 16),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text("Notification", style: TextStyle(fontSize: 16)),
-              Switch(
-                value: notificationEnabled,
-                onChanged: (value) {
-                  setState(() {
-                    notificationEnabled = value;
-                  });
-                },
-              ),
-            ],
-          ),
+          // Row(
+          //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          //   children: [
+          //     Text("Notification", style: TextStyle(fontSize: 16)),
+          //     Switch(
+          //       value: notificationEnabled,
+          //       onChanged: (value) {
+          //         setState(() {
+          //           notificationEnabled = value;
+          //         });
+          //       },
+          //     ),
+          //   ],
+          // ),
           if (notificationEnabled)
             GestureDetector(
               onTap: () async {

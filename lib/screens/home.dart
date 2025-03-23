@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:quran_mobile/models/surah_model.dart';
@@ -17,12 +18,14 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   List<Surah> surahList = [];
   List<Surah> filteredSurahList = [];
+  List<Map<String, dynamic>> quotes = [];
   TextEditingController searchController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
     fetchSurahs();
+    fetchQuotes();
   }
 
   Future<void> fetchSurahs() async {
@@ -39,6 +42,30 @@ class _HomeScreenState extends State<HomeScreen> {
       });
     } else {
       throw Exception('Failed to load Surahs');
+    }
+  }
+
+  void fetchQuotes() async {
+    try {
+      const String adminUid = '981uVvxeVLevNybG75VB4VJuzmJ3';
+      final snapshot = await FirebaseFirestore.instance
+          .collection("admin")
+          .doc(adminUid)
+          .collection("quotes")
+          .get();
+      final docs = snapshot.docs;
+
+      setState(() {
+        quotes = docs.map((doc) {
+          final data = doc.data();
+          return {
+            'quote': data['quote'] ?? '',
+            'subtitle': data['subtitle'] ?? '',
+          };
+        }).toList();
+      });
+    } catch (e) {
+      print('Failed to fetch quotes: $e');
     }
   }
 
@@ -86,21 +113,73 @@ class _HomeScreenState extends State<HomeScreen> {
                     contentPadding: EdgeInsets.symmetric(vertical: 14),
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12.0),
-                      borderSide: BorderSide(
-                        color: Colors.green,
-                        width: 1.5,
-                      ),
+                      borderSide: BorderSide(color: Colors.green, width: 1.5),
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12.0),
-                      borderSide: BorderSide(
-                        color: Colors.green.shade700,
-                        width: 2.0,
-                      ),
+                      borderSide:
+                          BorderSide(color: Colors.green.shade700, width: 2.0),
                     ),
                   ),
                   style: TextStyle(color: Colors.green),
                   onChanged: filterSurahs,
+                ),
+              ),
+            ),
+          ),
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.only(top: 16.0, left: 16.0),
+              child: SizedBox(
+                height: 140,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: quotes.length,
+                  itemBuilder: (context, index) {
+                    final quote = quotes[index];
+                    return Container(
+                      width: 280,
+                      margin: const EdgeInsets.only(right: 12),
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(16),
+                        gradient: LinearGradient(
+                          colors: [Colors.green[200]!, Colors.green[400]!],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.green.withOpacity(0.3),
+                            blurRadius: 6,
+                            offset: Offset(0, 3),
+                          )
+                        ],
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            quote['quote']!,
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            quote['subtitle']!,
+                            style: TextStyle(
+                              color: Colors.white70,
+                              fontSize: 13,
+                              fontStyle: FontStyle.italic,
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
                 ),
               ),
             ),
